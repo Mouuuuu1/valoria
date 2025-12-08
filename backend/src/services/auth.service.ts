@@ -1,13 +1,22 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { User, IUser } from '../models/user.model';
+import { prisma } from '../config/database';
+import { User, Role } from '../types/prisma';
 import { AppError } from '../middleware/error.middleware';
 
 export class AuthService {
   // Register new user
-  async register(name: string, email: string, password: string, role: string = 'customer'): Promise<{ user: any; token: string }> {
+  async register(
+    name: string,
+    email: string,
+    password: string,
+    role: string = 'CUSTOMER'
+  ): Promise<{ user: Omit<User, 'password'>; token: string }> {
     // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
     if (existingUser) {
       throw new AppError('User with this email already exists', 400);
     }
@@ -16,76 +25,81 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: role.toUpperCase() as Role,
+      },
     });
 
     // Generate token
-    const token = this.generateToken(user._id.toString());
+    const token = this.generateToken(user.id);
 
     // Remove password from response
-    const userObject = user.toObject();
-    const { password: _, ...userWithoutPassword } = userObject;
+    const { password: _, ...userWithoutPassword } = user;
 
     return { user: userWithoutPassword, token };
   }
 
   // Login user
-  async login(email: string, password: string): Promise<{ user: any; token: string }> {
+  async login(email: string, password: string): Promise<{ user: Omit<User, 'password'>; token: string }> {
     // Find user with password field
-    const user = await User.findOne({ email }).select('+password');
-    
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
     if (!user) {
       throw new AppError('Invalid email or password', 401);
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
       throw new AppError('Invalid email or password', 401);
     }
 
     // Generate token
-    const token = this.generateToken(user._id.toString());
+    const token = this.generateToken(user.id);
 
     // Remove password from response
-    const userObject = user.toObject();
-    const { password: _, ...userWithoutPassword } = userObject;
+    const { password: _, ...userWithoutPassword } = user;
 
     return { user: userWithoutPassword, token };
   }
 
   // Get user by ID
-  async getUserById(userId: string): Promise<IUser> {
-    const user = await User.findById(userId);
-    
+  async getUserById(userId: string): Promise<Omit<User, 'password'>> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
     if (!user) {
       throw new AppError('User not found', 404);
     }
 
-    return user;
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
   // Update user profile
-  async updateProfile(userId: string, updates: Partial<IUser>): Promise<IUser> {
+  async updateProfile(userId: string, updates: Partial<User>): Promise<Omit<User, 'password'>> {
     // Don't allow updating password or role through this method
     const { password, role, ...safeUpdates } = updates as any;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      safeUpdates,
-      { new: true, runValidators: true }
-    );
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: safeUpdates,
+    });
 
     if (!user) {
       throw new AppError('User not found', 404);
     }
 
-    return user;
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
   // Generate JWT token

@@ -1,148 +1,198 @@
-import { Cart, ICart } from '../models/cart.model';
-import { Product } from '../models/product.model';
+import { prisma } from '../config/database';
+import { Cart, CartItem } from '../types/prisma';
 import { AppError } from '../middleware/error.middleware';
 
 export class CartService {
-  // Get user's cart with populated product details
-  async getCart(userId: string): Promise<any> {
-    let cart = await Cart.findOne({ userId }).populate({
-      path: 'items.productId',
-      select: 'name price images stock'
+  // Get or create cart for user
+  async getCart(userId: string): Promise<Cart & { items: (CartItem & { product: any })[] }> {
+    let cart = await prisma.cart.findUnique({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
     });
 
     if (!cart) {
-      // Create empty cart if doesn't exist
-      cart = await Cart.create({ userId, items: [] });
+      cart = await prisma.cart.create({
+        data: { userId },
+        include: {
+          items: {
+            include: {
+              product: true,
+            },
+          },
+        },
+      });
     }
 
-    // Calculate cart total
-    const cartWithTotal = cart.toObject();
-    const total = cartWithTotal.items.reduce((sum: number, item: any) => {
-      return sum + (item.productId?.price || 0) * item.quantity;
-    }, 0);
-
-    return {
-      ...cartWithTotal,
-      total
-    };
+    return cart;
   }
 
   // Add item to cart
-  async addToCart(userId: string, productId: string, quantity: number): Promise<ICart> {
-    // Check if product exists and has sufficient stock
-    const product = await Product.findById(productId);
-    
+  async addToCart(userId: string, productId: string, quantity: number): Promise<Cart> {
+    // Check if product exists and has enough stock
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
     if (!product) {
       throw new AppError('Product not found', 404);
     }
 
     if (product.stock < quantity) {
-      throw new AppError('Insufficient stock available', 400);
+      throw new AppError('Insufficient stock', 400);
     }
 
-    // Find or create cart
-    let cart = await Cart.findOne({ userId });
-    
+    // Get or create cart
+    let cart = await prisma.cart.findUnique({
+      where: { userId },
+    });
+
     if (!cart) {
-      cart = new Cart({ userId, items: [] });
-    }
-
-    // Check if item already exists in cart
-    const existingItemIndex = cart.items.findIndex(
-      item => item.productId.toString() === productId
-    );
-
-    if (existingItemIndex > -1) {
-      // Update quantity
-      const newQuantity = cart.items[existingItemIndex].quantity + quantity;
-      
-      if (product.stock < newQuantity) {
-        throw new AppError('Insufficient stock available', 400);
-      }
-      
-      cart.items[existingItemIndex].quantity = newQuantity;
-    } else {
-      // Add new item
-      cart.items.push({
-        productId: productId as any,
-        quantity,
-        addedAt: new Date()
+      cart = await prisma.cart.create({
+        data: { userId },
       });
     }
 
-    await cart.save();
-    
-    return await Cart.findOne({ userId }).populate({
-      path: 'items.productId',
-      select: 'name price images stock'
-    }) as ICart;
+    // Check if product already in cart
+    const existingItem = await prisma.cartItem.findUnique({
+      where: {
+        cartId_productId: {
+          cartId: cart.id,
+          productId,
+        },
+      },
+    });
+
+    if (existingItem) {
+      // Update quantity
+      const newQuantity = existingItem.quantity + quantity;
+      
+      if (product.stock < newQuantity) {
+        throw new AppError('Insufficient stock', 400);
+      }
+
+      await prisma.cartItem.update({
+        where: { id: existingItem.id },
+        data: { quantity: newQuantity },
+      });
+    } else {
+      // Add new item
+      await prisma.cartItem.create({
+        data: {
+          cartId: cart.id,
+          productId,
+          quantity,
+        },
+      });
+    }
+
+    // Return updated cart with items
+    return prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    }) as any;
   }
 
   // Update cart item quantity
-  async updateCartItem(userId: string, productId: string, quantity: number): Promise<ICart> {
-    const cart = await Cart.findOne({ userId });
+  async updateCartItem(userId: string, productId: string, quantity: number): Promise<Cart> {
+    const cart = await prisma.cart.findUnique({
+      where: { userId },
+    });
 
     if (!cart) {
       throw new AppError('Cart not found', 404);
     }
 
     // Check product stock
-    const product = await Product.findById(productId);
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
     if (!product) {
       throw new AppError('Product not found', 404);
     }
 
     if (product.stock < quantity) {
-      throw new AppError('Insufficient stock available', 400);
+      throw new AppError('Insufficient stock', 400);
     }
 
-    // Find item in cart
-    const itemIndex = cart.items.findIndex(
-      item => item.productId.toString() === productId
-    );
+    // Update cart item
+    await prisma.cartItem.update({
+      where: {
+        cartId_productId: {
+          cartId: cart.id,
+          productId,
+        },
+      },
+      data: { quantity },
+    });
 
-    if (itemIndex === -1) {
-      throw new AppError('Item not found in cart', 404);
-    }
-
-    // Update quantity
-    cart.items[itemIndex].quantity = quantity;
-    await cart.save();
-
-    return await Cart.findOne({ userId }).populate({
-      path: 'items.productId',
-      select: 'name price images stock'
-    }) as ICart;
+    // Return updated cart
+    return prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    }) as any;
   }
 
   // Remove item from cart
-  async removeFromCart(userId: string, productId: string): Promise<ICart> {
-    const cart = await Cart.findOne({ userId });
+  async removeFromCart(userId: string, productId: string): Promise<Cart> {
+    const cart = await prisma.cart.findUnique({
+      where: { userId },
+    });
 
     if (!cart) {
       throw new AppError('Cart not found', 404);
     }
 
-    // Filter out the item
-    cart.items = cart.items.filter(
-      item => item.productId.toString() !== productId
-    );
+    await prisma.cartItem.delete({
+      where: {
+        cartId_productId: {
+          cartId: cart.id,
+          productId,
+        },
+      },
+    });
 
-    await cart.save();
-
-    return await Cart.findOne({ userId }).populate({
-      path: 'items.productId',
-      select: 'name price images stock'
-    }) as ICart;
+    // Return updated cart
+    return prisma.cart.findUnique({
+      where: { id: cart.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    }) as any;
   }
 
   // Clear cart
   async clearCart(userId: string): Promise<void> {
-    const cart = await Cart.findOne({ userId });
+    const cart = await prisma.cart.findUnique({
+      where: { userId },
+    });
 
     if (cart) {
-      cart.items = [];
-      await cart.save();
+      await prisma.cartItem.deleteMany({
+        where: { cartId: cart.id },
+      });
     }
   }
 }

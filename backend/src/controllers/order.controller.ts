@@ -20,13 +20,12 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
     return;
   }
 
-  const { items, shippingAddress, paymentIntentId } = req.body;
+  const { shippingAddress, paymentMethod } = req.body;
 
   const order = await orderService.createOrder(
-    req.user._id,
-    items,
+    req.user.id,
     shippingAddress,
-    paymentIntentId
+    paymentMethod
   );
 
   res.status(201).json({
@@ -70,14 +69,11 @@ export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response)
 // @route   GET /api/orders/admin/all
 // @access  Private/Admin
 export const getAllOrders = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const page = req.query.page ? Number(req.query.page) : 1;
-  const limit = req.query.limit ? Number(req.query.limit) : 20;
-
-  const result = await orderService.getAllOrders(page, limit);
+  const orders = await orderService.getAllOrders();
 
   res.status(200).json({
     status: 'success',
-    data: result
+    data: { orders }
   });
 });
 
@@ -85,12 +81,11 @@ export const getAllOrders = asyncHandler(async (req: AuthRequest, res: Response)
 // @route   PUT /api/orders/:id/status
 // @access  Private/Admin
 export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { orderStatus, paymentStatus } = req.body;
+  const { orderStatus } = req.body;
 
   const order = await orderService.updateOrderStatus(
     req.params.id,
-    orderStatus,
-    paymentStatus
+    orderStatus
   );
 
   res.status(200).json({
@@ -127,10 +122,11 @@ export const createPaymentIntent = asyncHandler(async (req: AuthRequest, res: Re
 // @route   GET /api/orders/admin/statistics
 // @access  Private/Admin
 export const getOrderStatistics = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const statistics = await orderService.getOrderStatistics();
-
+  // TODO: Implement getOrderStatistics in OrderService
   res.status(200).json({
     status: 'success',
-    data: statistics
+    data: {
+      message: 'Statistics endpoint - to be implemented'
+    }
   });
 });

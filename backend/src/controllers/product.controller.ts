@@ -15,12 +15,12 @@ export const getAllProducts = asyncHandler(async (req: Request, res: Response) =
     maxPrice: req.query.maxPrice ? Number(req.query.maxPrice) : undefined,
     search: req.query.search as string,
     featured: req.query.featured ? req.query.featured === 'true' : undefined,
-    page: req.query.page ? Number(req.query.page) : 1,
-    limit: req.query.limit ? Number(req.query.limit) : 12,
-    sort: req.query.sort as string
   };
+  
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 12;
 
-  const result = await productService.getAllProducts(query);
+  const result = await productService.getProducts(query, page, limit);
 
   res.status(200).json({
     status: 'success',

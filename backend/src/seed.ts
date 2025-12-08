@@ -1,164 +1,166 @@
-import { Product } from './models/product.model';
-import { User } from './models/user.model';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
-import { connectDatabase } from './config/database';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+const prisma = new PrismaClient();
+
 const sampleProducts = [
   {
-    name: 'Classic Leather Tote',
-    description: 'Elegant leather tote bag perfect for everyday use. Spacious interior with multiple compartments.',
-    price: 189.99,
-    category: 'tote',
-    images: [
-      'https://images.unsplash.com/photo-1594633313593-bab3825d0caf?w=500',
-      'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500'
-    ],
-    stock: 15,
-    material: 'Genuine Leather',
-    colors: ['Black', 'Brown', 'Tan'],
-    featured: true
-  },
-  {
-    name: 'Mini Crossbody Bag',
-    description: 'Compact and stylish crossbody bag for hands-free convenience. Perfect for nights out.',
-    price: 79.99,
-    category: 'crossbody',
-    images: [
-      'https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500',
-      'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500'
-    ],
-    stock: 25,
-    material: 'Vegan Leather',
-    colors: ['Black', 'Red', 'Navy'],
-    featured: true
-  },
-  {
-    name: 'Evening Clutch',
-    description: 'Sophisticated clutch with metallic finish. Ideal for formal events and special occasions.',
+    name: "Classic Leather Tote",
+    description: "Elegant leather tote bag perfect for everyday use. Features multiple compartments and a secure zipper closure.",
     price: 129.99,
-    category: 'clutch',
+    category: "TOTE",
+    stock: 25,
     images: [
-      'https://images.unsplash.com/photo-1564422170194-896b89110ef8?w=500'
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500",
+      "https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500"
     ],
-    stock: 10,
-    material: 'Satin with Metal Accents',
-    colors: ['Gold', 'Silver', 'Rose Gold'],
     featured: true
   },
   {
-    name: 'Work Laptop Bag',
-    description: 'Professional laptop bag with padded compartment. Combines style with functionality.',
-    price: 159.99,
-    category: 'handbag',
-    images: [
-      'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500'
-    ],
-    stock: 20,
-    material: 'Leather',
-    colors: ['Black', 'Brown'],
-    featured: false
-  },
-  {
-    name: 'Designer Shoulder Bag',
-    description: 'Luxury shoulder bag with chain strap. Statement piece for fashion-forward individuals.',
-    price: 249.99,
-    category: 'shoulder',
-    images: [
-      'https://images.unsplash.com/photo-1565084888279-aca607ecce0c?w=500'
-    ],
-    stock: 8,
-    material: 'Premium Leather',
-    colors: ['Burgundy', 'Black', 'Beige'],
-    featured: true
-  },
-  {
-    name: 'Casual Canvas Backpack',
-    description: 'Stylish canvas backpack for everyday adventures. Multiple pockets for organization.',
+    name: "Vintage Crossbody Bag",
+    description: "Compact crossbody bag with adjustable strap. Perfect for hands-free convenience.",
     price: 89.99,
-    category: 'backpack',
-    images: [
-      'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'
-    ],
+    category: "CROSSBODY",
     stock: 30,
-    material: 'Canvas',
-    colors: ['Navy', 'Gray', 'Olive'],
+    images: [
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500",
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500"
+    ],
+    featured: true
+  },
+  {
+    name: "Designer Shoulder Bag",
+    description: "Luxurious shoulder bag with premium hardware and soft leather finish.",
+    price: 199.99,
+    category: "SHOULDER",
+    stock: 15,
+    images: [
+      "https://images.unsplash.com/photo-1564422167509-4f3295f60e0b?w=500"
+    ],
+    featured: true
+  },
+  {
+    name: "Evening Clutch",
+    description: "Elegant clutch perfect for formal occasions. Features gold-tone chain strap.",
+    price: 79.99,
+    category: "CLUTCH",
+    stock: 20,
+    images: [
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500"
+    ],
     featured: false
   },
   {
-    name: 'Slim Card Wallet',
-    description: 'Minimalist wallet with RFID protection. Holds cards and cash in sleek design.',
-    price: 49.99,
-    category: 'wallet',
+    name: "Travel Backpack",
+    description: "Spacious backpack with multiple pockets and padded laptop compartment.",
+    price: 149.99,
+    category: "BACKPACK",
+    stock: 18,
     images: [
-      'https://images.unsplash.com/photo-1627123419938-0c3b7b0e5e71?w=500'
+      "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500"
     ],
-    stock: 50,
-    material: 'Leather',
-    colors: ['Black', 'Brown', 'Navy'],
-    featured: false
+    featured: true
   },
   {
-    name: 'Vintage Satchel',
-    description: 'Classic satchel with vintage-inspired design. Perfect blend of nostalgia and modern utility.',
-    price: 169.99,
-    category: 'handbag',
-    images: [
-      'https://images.unsplash.com/photo-1590739225684-b57631ff2374?w=500'
-    ],
+    name: "Sequined Evening Bag",
+    description: "Glamorous evening bag with sequin detailing and satin interior.",
+    price: 95.99,
+    category: "EVENING",
     stock: 12,
-    material: 'Leather',
-    colors: ['Brown', 'Cognac'],
+    images: [
+      "https://images.unsplash.com/photo-1566150905458-1bf1fc113f0d?w=500"
+    ],
+    featured: false
+  },
+  {
+    name: "Mini Crossbody",
+    description: "Cute mini crossbody bag perfect for essentials. Lightweight and stylish.",
+    price: 69.99,
+    category: "CROSSBODY",
+    stock: 35,
+    images: [
+      "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=500"
+    ],
+    featured: false
+  },
+  {
+    name: "Premium Tote Bag",
+    description: "Large tote bag with reinforced handles and premium canvas material.",
+    price: 159.99,
+    category: "TOTE",
+    stock: 22,
+    images: [
+      "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500"
+    ],
     featured: true
   }
 ];
 
-const seedDatabase = async () => {
+async function seed() {
   try {
     console.log('🌱 Starting database seed...');
-    
-    await connectDatabase();
+
+    // Connect to database
+    await prisma.$connect();
+    console.log('✅ PostgreSQL connected successfully');
 
     // Clear existing data
     console.log('🗑️  Clearing existing data...');
-    await Product.deleteMany({});
-    await User.deleteMany({});
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
+    await prisma.cartItem.deleteMany();
+    await prisma.cart.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.user.deleteMany();
 
     // Create admin user
     console.log('👤 Creating admin user...');
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    await User.create({
-      name: 'Admin User',
-      email: 'admin@valorina.com',
-      password: hashedPassword,
-      role: 'admin'
+    const adminPassword = await bcrypt.hash('admin123', 10);
+    const admin = await prisma.user.create({
+      data: {
+        name: 'Admin User',
+        email: 'admin@valorina.com',
+        password: adminPassword,
+        role: 'ADMIN'
+      }
     });
 
-    // Create sample customer
+    // Create customer user
     const customerPassword = await bcrypt.hash('customer123', 10);
-    await User.create({
-      name: 'Jane Doe',
-      email: 'customer@valorina.com',
-      password: customerPassword,
-      role: 'customer'
+    const customer = await prisma.user.create({
+      data: {
+        name: 'Customer User',
+        email: 'customer@valorina.com',
+        password: customerPassword,
+        role: 'CUSTOMER'
+      }
     });
 
     // Create products
     console.log('📦 Creating sample products...');
-    await Product.insertMany(sampleProducts);
+    for (const productData of sampleProducts) {
+      await prisma.product.create({
+        data: {
+          ...productData,
+          category: productData.category as any
+        }
+      });
+    }
 
     console.log('✅ Database seeded successfully!');
     console.log('\n📝 Login credentials:');
     console.log('Admin: admin@valorina.com / admin123');
     console.log('Customer: customer@valorina.com / customer123');
-    
-    process.exit(0);
-  } catch (error) {
-    console.error('❌ Seed failed:', error);
-    process.exit(1);
-  }
-};
 
-seedDatabase();
+  } catch (error) {
+    console.error('❌ Seed error:', error);
+    process.exit(1);
+  } finally {
+    await prisma.$disconnect();
+  }
+}
+
+seed();

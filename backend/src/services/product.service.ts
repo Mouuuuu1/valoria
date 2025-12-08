@@ -1,79 +1,71 @@
-import { Product, IProduct } from '../models/product.model';
+import { prisma } from '../config/database';
+import { Product, Category } from '../types/prisma';
 import { AppError } from '../middleware/error.middleware';
-import { FilterQuery } from 'mongoose';
 
-export interface ProductQuery {
+interface ProductFilters {
   category?: string;
+  search?: string;
   minPrice?: number;
   maxPrice?: number;
-  search?: string;
   featured?: boolean;
-  page?: number;
-  limit?: number;
-  sort?: string;
 }
 
 export class ProductService {
-  // Get all products with filtering, searching, and pagination
-  async getAllProducts(query: ProductQuery) {
-    const {
-      category,
-      minPrice,
-      maxPrice,
-      search,
-      featured,
-      page = 1,
-      limit = 12,
-      sort = '-createdAt'
-    } = query;
-
-    // Build filter
-    const filter: FilterQuery<IProduct> = {};
-
-    if (category) {
-      filter.category = category;
-    }
-
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      filter.price = {};
-      if (minPrice !== undefined) filter.price.$gte = minPrice;
-      if (maxPrice !== undefined) filter.price.$lte = maxPrice;
-    }
-
-    if (search) {
-      filter.$text = { $search: search };
-    }
-
-    if (featured !== undefined) {
-      filter.featured = featured;
-    }
-
-    // Calculate pagination
+  // Get all products with filters and pagination
+  async getProducts(
+    filters: ProductFilters,
+    page: number = 1,
+    limit: number = 12
+  ): Promise<{ products: Product[]; total: number; pages: number }> {
     const skip = (page - 1) * limit;
 
-    // Execute query
+    // Build where clause
+    const where: any = {};
+
+    if (filters.category) {
+      where.category = filters.category.toUpperCase();
+    }
+
+    if (filters.search) {
+      where.OR = [
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+      where.price = {};
+      if (filters.minPrice !== undefined) where.price.gte = filters.minPrice;
+      if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
+    }
+
+    if (filters.featured !== undefined) {
+      where.featured = filters.featured;
+    }
+
+    // Get products and total count
     const [products, total] = await Promise.all([
-      Product.find(filter)
-        .sort(sort)
-        .skip(skip)
-        .limit(limit),
-      Product.countDocuments(filter)
+      prisma.product.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.product.count({ where }),
     ]);
 
     return {
       products,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
+      total,
+      pages: Math.ceil(total / limit),
     };
   }
 
   // Get product by ID
-  async getProductById(productId: string): Promise<IProduct> {
-    const product = await Product.findById(productId);
+  async getProductById(productId: string): Promise<Product> {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
 
     if (!product) {
       throw new AppError('Product not found', 404);
@@ -83,18 +75,23 @@ export class ProductService {
   }
 
   // Create new product (Admin only)
-  async createProduct(productData: Partial<IProduct>): Promise<IProduct> {
-    const product = await Product.create(productData);
+  async createProduct(productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>): Promise<Product> {
+    const product = await prisma.product.create({
+      data: {
+        ...productData,
+        category: productData.category.toUpperCase() as Category,
+      },
+    });
+
     return product;
   }
 
   // Update product (Admin only)
-  async updateProduct(productId: string, updates: Partial<IProduct>): Promise<IProduct> {
-    const product = await Product.findByIdAndUpdate(
-      productId,
-      updates,
-      { new: true, runValidators: true }
-    );
+  async updateProduct(productId: string, updates: Partial<Product>): Promise<Product> {
+    const product = await prisma.product.update({
+      where: { id: productId },
+      data: updates,
+    });
 
     if (!product) {
       throw new AppError('Product not found', 404);
@@ -105,39 +102,37 @@ export class ProductService {
 
   // Delete product (Admin only)
   async deleteProduct(productId: string): Promise<void> {
-    const product = await Product.findByIdAndDelete(productId);
-
-    if (!product) {
-      throw new AppError('Product not found', 404);
-    }
+    await prisma.product.delete({
+      where: { id: productId },
+    });
   }
 
   // Get featured products
-  async getFeaturedProducts(limit: number = 8): Promise<IProduct[]> {
-    return await Product.find({ featured: true })
-      .sort('-createdAt')
-      .limit(limit);
+  async getFeaturedProducts(limit: number = 8): Promise<Product[]> {
+    return prisma.product.findMany({
+      where: { featured: true },
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
-  // Get products by category
-  async getProductsByCategory(category: string): Promise<IProduct[]> {
-    return await Product.find({ category: category.toLowerCase() })
-      .sort('-createdAt');
-  }
-
-  // Update stock after order
-  async updateStock(productId: string, quantity: number): Promise<void> {
-    const product = await Product.findById(productId);
+  // Update product stock
+  async updateStock(productId: string, quantity: number): Promise<Product> {
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
 
     if (!product) {
       throw new AppError('Product not found', 404);
     }
 
-    if (product.stock < quantity) {
+    if (product.stock + quantity < 0) {
       throw new AppError('Insufficient stock', 400);
     }
 
-    product.stock -= quantity;
-    await product.save();
+    return prisma.product.update({
+      where: { id: productId },
+      data: { stock: { increment: quantity } },
+    });
   }
 }

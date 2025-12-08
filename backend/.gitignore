@@ -24,3 +24,5 @@ coverage/
 
 # Uploads
 uploads/
+
+/src/generated/prisma

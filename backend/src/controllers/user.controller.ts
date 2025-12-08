@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { User } from '../models/user.model';
+import { prisma } from '../config/database';
 import { asyncHandler } from '../middleware/error.middleware';
 import { AuthRequest } from '../middleware/auth.middleware';
 
@@ -12,8 +12,8 @@ export const getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) 
   const skip = (page - 1) * limit;
 
   const [users, total] = await Promise.all([
-    User.find().skip(skip).limit(limit).select('-password'),
-    User.countDocuments()
+    prisma.user.findMany({ skip, take: limit, select: { password: false, id: true, name: true, email: true, role: true, phone: true, address: true, createdAt: true, updatedAt: true } }),
+    prisma.user.count()
   ]);
 
   res.status(200).json({
@@ -34,7 +34,7 @@ export const getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) 
 // @route   GET /api/users/:id
 // @access  Private/Admin
 export const getUserById = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const user = await User.findById(req.params.id).select('-password');
+  const user = await prisma.user.findUnique({ where: { id: req.params.id }, select: { password: false, id: true, name: true, email: true, role: true, phone: true, address: true, createdAt: true, updatedAt: true } });
 
   if (!user) {
     res.status(404).json({
@@ -66,11 +66,11 @@ export const updateUserRole = asyncHandler(async (req: AuthRequest, res: Respons
     return;
   }
 
-  const user = await User.findByIdAndUpdate(
-    req.params.id,
-    { role },
-    { new: true, runValidators: true }
-  ).select('-password');
+  const user = await prisma.user.update({
+    where: { id: req.params.id },
+    data: { role: role as any },
+    select: { password: false, id: true, name: true, email: true, role: true, phone: true, address: true, createdAt: true, updatedAt: true }
+  });
 
   if (!user) {
     res.status(404).json({
@@ -92,7 +92,7 @@ export const updateUserRole = asyncHandler(async (req: AuthRequest, res: Respons
 // @route   DELETE /api/users/:id
 // @access  Private/Admin
 export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const user = await User.findByIdAndDelete(req.params.id);
+  const user = await prisma.user.delete({ where: { id: req.params.id } });
 
   if (!user) {
     res.status(404).json({

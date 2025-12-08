@@ -1,6 +1,5 @@
-import { Order, IOrder } from '../models/order.model';
-import { Product } from '../models/product.model';
-import { Cart } from '../models/cart.model';
+import { prisma } from '../config/database';
+import { Order, OrderStatus, PaymentStatus } from '../types/prisma';
 import { AppError } from '../middleware/error.middleware';
 import Stripe from 'stripe';
 
@@ -8,86 +7,175 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16'
 });
 
+interface ShippingAddress {
+  street: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+}
+
 export class OrderService {
   // Create new order
   async createOrder(
     userId: string,
-    items: any[],
-    shippingAddress: any,
-    paymentIntentId?: string
-  ): Promise<IOrder> {
-    // Validate and prepare order items
-    const orderItems = await Promise.all(
-      items.map(async (item) => {
-        const product = await Product.findById(item.productId);
-        
-        if (!product) {
-          throw new AppError(`Product ${item.productId} not found`, 404);
-        }
+    shippingAddress: ShippingAddress,
+    paymentMethod?: string
+  ): Promise<Order> {
+    // Get user's cart
+    const cart = await prisma.cart.findUnique({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
 
-        if (product.stock < item.quantity) {
-          throw new AppError(`Insufficient stock for ${product.name}`, 400);
-        }
+    if (!cart || cart.items.length === 0) {
+      throw new AppError('Cart is empty', 400);
+    }
 
-        return {
-          productId: product._id,
-          name: product.name,
-          price: product.price,
-          quantity: item.quantity,
-          image: product.images[0]
-        };
-      })
-    );
+    // Check stock availability
+    for (const item of cart.items) {
+      if (item.product.stock < item.quantity) {
+        throw new AppError(`Insufficient stock for ${item.product.name}`, 400);
+      }
+    }
 
     // Calculate total
-    const totalAmount = orderItems.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+    const totalAmount = cart.items.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
       0
     );
 
-    // Create order
-    const order = await Order.create({
-      userId,
-      items: orderItems,
-      totalAmount,
-      shippingAddress,
-      paymentIntentId,
-      paymentStatus: paymentIntentId ? 'completed' : 'pending',
-      orderStatus: 'processing'
-    });
+    // Generate order number
+    const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
 
-    // Update product stock
-    await Promise.all(
-      orderItems.map(async (item) => {
-        await Product.findByIdAndUpdate(item.productId, {
-          $inc: { stock: -item.quantity }
+    // Create order with transaction
+    const order = await prisma.$transaction(async (tx) => {
+      // Create order
+      const newOrder = await tx.order.create({
+        data: {
+          orderNumber,
+          userId,
+          totalAmount,
+          shippingAddress: shippingAddress as any,
+          paymentMethod,
+          status: 'PENDING',
+          paymentStatus: 'PENDING',
+        },
+      });
+
+      // Create order items and update product stock
+      for (const item of cart.items) {
+        await tx.orderItem.create({
+          data: {
+            orderId: newOrder.id,
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.product.price,
+          },
         });
-      })
-    );
 
-    // Clear user's cart
-    await Cart.findOneAndUpdate(
-      { userId },
-      { items: [] }
-    );
+        // Decrease product stock
+        await tx.product.update({
+          where: { id: item.productId },
+          data: {
+            stock: {
+              decrement: item.quantity,
+            },
+          },
+        });
+      }
+
+      // Clear cart
+      await tx.cartItem.deleteMany({
+        where: { cartId: cart.id },
+      });
+
+      return newOrder;
+    });
 
     return order;
   }
 
-  // Get user's orders
-  async getUserOrders(userId: string): Promise<IOrder[]> {
-    return await Order.find({ userId })
-      .sort('-createdAt')
-      .populate('userId', 'name email');
+  // Get orders for user
+  async getUserOrders(userId: string): Promise<Order[]> {
+    return prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   // Get order by ID
-  async getOrderById(orderId: string, userId?: string): Promise<IOrder> {
-    const query: any = { _id: orderId };
-    if (userId) query.userId = userId;
+  async getOrderById(orderId: string, userId?: string): Promise<Order> {
+    const where: any = { id: orderId };
+    if (userId) {
+      where.userId = userId;
+    }
 
-    const order = await Order.findOne(query)
-      .populate('userId', 'name email');
+    const order = await prisma.order.findUnique({
+      where,
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
+
+    return order as any;
+  }
+
+  // Get all orders (Admin)
+  async getAllOrders(): Promise<Order[]> {
+    return prisma.order.findMany({
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  // Update order status (Admin)
+  async updateOrderStatus(orderId: string, status: OrderStatus): Promise<Order> {
+    const order = await prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
 
     if (!order) {
       throw new AppError('Order not found', 404);
@@ -96,94 +184,34 @@ export class OrderService {
     return order;
   }
 
-  // Get all orders (Admin only)
-  async getAllOrders(page: number = 1, limit: number = 20): Promise<any> {
-    const skip = (page - 1) * limit;
-
-    const [orders, total] = await Promise.all([
-      Order.find()
-        .sort('-createdAt')
-        .skip(skip)
-        .limit(limit)
-        .populate('userId', 'name email'),
-      Order.countDocuments()
-    ]);
-
-    return {
-      orders,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
-      }
-    };
-  }
-
-  // Update order status (Admin only)
-  async updateOrderStatus(
-    orderId: string,
-    orderStatus: string,
-    paymentStatus?: string
-  ): Promise<IOrder> {
-    const updates: any = { orderStatus };
-    if (paymentStatus) updates.paymentStatus = paymentStatus;
-
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      updates,
-      { new: true, runValidators: true }
-    );
+  // Create payment intent
+  async createPaymentIntent(orderId: string): Promise<{ clientSecret: string }> {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    });
 
     if (!order) {
       throw new AppError('Order not found', 404);
     }
 
-    return order;
+    // Create Stripe payment intent
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(order.totalAmount * 100), // Convert to cents
+      currency: 'usd',
+      metadata: {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+      },
+    });
+
+    return { clientSecret: paymentIntent.client_secret! };
   }
 
-  // Create Stripe payment intent
-  async createPaymentIntent(amount: number, currency: string = 'usd'): Promise<any> {
-    try {
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: Math.round(amount * 100), // Convert to cents
-        currency,
-        automatic_payment_methods: {
-          enabled: true
-        }
-      });
-
-      return {
-        clientSecret: paymentIntent.client_secret,
-        paymentIntentId: paymentIntent.id
-      };
-    } catch (error: any) {
-      throw new AppError(`Payment error: ${error.message}`, 400);
-    }
-  }
-
-  // Get order statistics (Admin only)
-  async getOrderStatistics(): Promise<any> {
-    const [
-      totalOrders,
-      totalRevenue,
-      pendingOrders,
-      completedOrders
-    ] = await Promise.all([
-      Order.countDocuments(),
-      Order.aggregate([
-        { $match: { paymentStatus: 'completed' } },
-        { $group: { _id: null, total: { $sum: '$totalAmount' } } }
-      ]),
-      Order.countDocuments({ orderStatus: 'processing' }),
-      Order.countDocuments({ orderStatus: 'delivered' })
-    ]);
-
-    return {
-      totalOrders,
-      totalRevenue: totalRevenue[0]?.total || 0,
-      pendingOrders,
-      completedOrders
-    };
+  // Update payment status
+  async updatePaymentStatus(orderId: string, status: PaymentStatus): Promise<Order> {
+    return prisma.order.update({
+      where: { id: orderId },
+      data: { paymentStatus: status },
+    });
   }
 }

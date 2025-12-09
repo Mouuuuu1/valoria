@@ -179,11 +179,14 @@ export const sendOrderConfirmationEmail = async (data: OrderEmailData): Promise<
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Order confirmation email sent to ${data.customerEmail}`);
-  } catch (error) {
-    console.error('Failed to send customer email:', error);
-    // Don't throw - we don't want to fail the order if email fails
+    console.log('📧 Sending customer confirmation to:', data.customerEmail);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`✅ Order confirmation email sent to ${data.customerEmail}`);
+    console.log('✅ Message ID:', info.messageId);
+  } catch (error: any) {
+    console.error('❌ Failed to send customer email:', error.message);
+    console.error('❌ Full error:', error);
+    throw error;
   }
 };
 
@@ -299,19 +302,34 @@ export const sendAdminOrderNotification = async (data: OrderEmailData): Promise<
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log('Admin notification email sent');
-  } catch (error) {
-    console.error('Failed to send admin email:', error);
+    console.log('📧 Sending admin notification to:', process.env.ADMIN_EMAIL);
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Admin notification email sent to:', process.env.ADMIN_EMAIL);
+    console.log('✅ Message ID:', info.messageId);
+  } catch (error: any) {
+    console.error('❌ Failed to send admin email:', error.message);
+    console.error('❌ Full error:', error);
+    throw error;
   }
 };
 
 // Send both emails
 export const sendOrderEmails = async (data: OrderEmailData): Promise<void> => {
-  await Promise.all([
-    sendOrderConfirmationEmail(data),
-    sendAdminOrderNotification(data),
-  ]);
+  console.log('📧 Starting email send process...');
+  console.log('📧 Email config - USER:', process.env.EMAIL_USER);
+  console.log('📧 Email config - ADMIN:', process.env.ADMIN_EMAIL);
+  console.log('📧 Customer email:', data.customerEmail);
+  
+  try {
+    await Promise.all([
+      sendOrderConfirmationEmail(data),
+      sendAdminOrderNotification(data),
+    ]);
+    console.log('✅ Both order emails sent successfully');
+  } catch (error) {
+    console.error('❌ Error in sendOrderEmails:', error);
+    throw error;
+  }
 };
 
 export default {

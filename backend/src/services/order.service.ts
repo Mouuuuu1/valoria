@@ -108,6 +108,10 @@ export class OrderService {
 
     // Send confirmation emails (don't await - run in background)
     const shippingInfo = shippingAddress as ShippingAddress;
+    console.log('📧 Attempting to send order emails for order:', fullOrder.orderNumber);
+    console.log('📧 Customer email:', guestEmail);
+    console.log('📧 Admin email:', process.env.ADMIN_EMAIL);
+    
     sendOrderEmails({
       orderNumber: fullOrder.orderNumber,
       customerName: shippingInfo.fullName || 'Valued Customer',
@@ -128,7 +132,12 @@ export class OrderService {
       shipping: 0, // Add shipping calculation if needed
       total: fullOrder.totalAmount,
       paymentMethod: paymentMethod || 'cash',
-    }).catch(err => console.error('Failed to send order emails:', err));
+    })
+      .then(() => console.log('✅ Order emails sent successfully'))
+      .catch(err => {
+        console.error('❌ Failed to send order emails:', err.message);
+        console.error('❌ Full error:', err);
+      });
 
     return fullOrder;
   }

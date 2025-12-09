@@ -7,6 +7,8 @@ import { api } from '@/lib/api';
 import { Product } from '@/types';
 import { FiShoppingBag, FiArrowRight } from 'react-icons/fi';
 
+export const dynamic = 'force-dynamic';
+
 export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);

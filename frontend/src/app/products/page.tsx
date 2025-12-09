@@ -8,6 +8,8 @@ import { api } from '@/lib/api';
 import { Product } from '@/types';
 import { FiSearch, FiFilter } from 'react-icons/fi';
 
+export const dynamic = 'force-dynamic';
+
 export default function ProductsPage() {
   const searchParams = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);

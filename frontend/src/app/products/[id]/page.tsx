@@ -10,6 +10,8 @@ import { Product } from '@/types';
 import { FiShoppingCart, FiMinus, FiPlus } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
+export const dynamic = 'force-dynamic';
+
 export default function ProductDetailPage() {
   const params = useParams();
   const router = useRouter();

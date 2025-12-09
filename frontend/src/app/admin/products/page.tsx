@@ -138,7 +138,7 @@ export default function AdminProducts() {
                     </td>
                     <td className="p-4 font-medium">{product.name}</td>
                     <td className="p-4">{product.category}</td>
-                    <td className="p-4">${product.price.toFixed(2)}</td>
+                    <td className="p-4">{product.price.toFixed(2)} EGP</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded text-sm ${
                         product.stock > 10 ? 'bg-green-100 text-green-800' :

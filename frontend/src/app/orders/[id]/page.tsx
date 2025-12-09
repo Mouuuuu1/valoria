@@ -115,11 +115,11 @@ export default function OrderDetailsPage() {
                   <h3 className="font-semibold">{item.name}</h3>
                   <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                   <p className="text-sm font-semibold text-primary-600">
-                    ${item.price.toFixed(2)} each
+                    {item.price.toFixed(2)} EGP each
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="font-bold">{(item.price * item.quantity).toFixed(2)} EGP</p>
                 </div>
               </div>
             ))}
@@ -146,15 +146,15 @@ export default function OrderDetailsPage() {
           <div className="space-y-2">
             <div className="flex justify-between text-lg">
               <span>Subtotal</span>
-              <span>${(order.totalAmount - (order.totalAmount >= 100 ? 0 : 10)).toFixed(2)}</span>
+              <span>{(order.totalAmount - (order.totalAmount >= 100 ? 0 : 10)).toFixed(2)} EGP</span>
             </div>
             <div className="flex justify-between text-lg">
               <span>Shipping</span>
-              <span>{order.totalAmount >= 100 ? 'FREE' : '$10.00'}</span>
+              <span>{order.totalAmount >= 100 ? 'FREE' : '10.00 EGP'}</span>
             </div>
             <div className="flex justify-between text-xl font-bold pt-2 border-t">
               <span>Total</span>
-              <span className="text-primary-600">${order.totalAmount.toFixed(2)}</span>
+              <span className="text-primary-600">{order.totalAmount.toFixed(2)} EGP</span>
             </div>
           </div>
         </div>

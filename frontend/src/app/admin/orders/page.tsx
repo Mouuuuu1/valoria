@@ -144,7 +144,7 @@ export default function AdminOrders() {
                     <td className="p-4">
                       {new Date(order.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="p-4 font-semibold">${order.totalAmount.toFixed(2)}</td>
+                    <td className="p-4 font-semibold">{order.totalAmount.toFixed(2)} EGP</td>
                     <td className="p-4">
                       <span className={`px-2 py-1 rounded text-sm ${getStatusColor(order.paymentStatus)}`}>
                         {order.paymentStatus}
@@ -199,7 +199,7 @@ export default function AdminOrders() {
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                       </div>
-                      <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                      <p className="font-semibold">{(item.price * item.quantity).toFixed(2)} EGP</p>
                     </div>
                   ))}
                 </div>
@@ -291,7 +291,7 @@ export default function AdminOrders() {
               <div className="pt-4 border-t">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary-600">${selectedOrder.totalAmount.toFixed(2)}</span>
+                  <span className="text-primary-600">{selectedOrder.totalAmount.toFixed(2)} EGP</span>
                 </div>
               </div>
             </div>

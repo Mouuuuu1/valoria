@@ -100,7 +100,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-orange-100 text-sm">Total Revenue</p>
-                    <p className="text-3xl font-bold">${stats.totalRevenue.toFixed(2)}</p>
+                    <p className="text-3xl font-bold">{stats.totalRevenue.toFixed(2)} EGP</p>
                   </div>
                   <FiDollarSign className="text-5xl text-orange-200" />
                 </div>

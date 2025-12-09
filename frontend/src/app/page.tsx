@@ -109,7 +109,7 @@ export default function Home() {
                     {product.description}
                   </p>
                   <p className="text-primary-600 font-bold text-xl">
-                    ${product.price.toFixed(2)}
+                    {product.price.toFixed(2)} EGP
                   </p>
                 </Link>
               ))}

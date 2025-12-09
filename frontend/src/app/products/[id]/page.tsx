@@ -124,7 +124,7 @@ export default function ProductDetailPage() {
             <span className="text-sm text-gray-500 uppercase">{product.category}</span>
             <h1 className="text-3xl font-bold mt-2 mb-4">{product.name}</h1>
             <p className="text-3xl font-bold text-primary-600 mb-6">
-              ${product.price.toFixed(2)}
+              {product.price.toFixed(2)} EGP
             </p>
 
             <p className="text-gray-700 mb-6 leading-relaxed">{product.description}</p>

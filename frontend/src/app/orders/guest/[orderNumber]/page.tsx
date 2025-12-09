@@ -196,7 +196,7 @@ export default function GuestOrderPage({ params }: { params: { orderNumber: stri
                   <h3 className="font-medium">{item.name}</h3>
                   <p className="text-sm text-gray-600">Quantity: {item.quantity}</p>
                   <p className="font-semibold text-primary-600">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    {(item.price * item.quantity).toFixed(2)} EGP
                   </p>
                 </div>
               </div>
@@ -206,7 +206,7 @@ export default function GuestOrderPage({ params }: { params: { orderNumber: stri
           <div className="border-t mt-4 pt-4">
             <div className="flex justify-between text-lg font-bold">
               <span>Total</span>
-              <span className="text-primary-600">${order.totalAmount.toFixed(2)}</span>
+              <span className="text-primary-600">{order.totalAmount.toFixed(2)} EGP</span>
             </div>
           </div>
         </div>

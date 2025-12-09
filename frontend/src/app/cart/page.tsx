@@ -81,7 +81,7 @@ export default function CartPage() {
                     </Link>
                     <p className="text-sm text-gray-600">{item.product?.category}</p>
                     <p className="text-primary-600 font-bold mt-2">
-                      ${item.product?.price?.toFixed(2) || '0.00'}
+                      {item.product?.price?.toFixed(2) || '0.00'} EGP
                     </p>
                   </div>
 
@@ -131,19 +131,19 @@ export default function CartPage() {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">{subtotal.toFixed(2)} EGP</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="font-semibold">
-                    {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
+                    {shipping === 0 ? 'FREE' : `${shipping.toFixed(2)} EGP`}
                   </span>
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
                     <span className="text-primary-600">
-                      ${total.toFixed(2)}
+                      {total.toFixed(2)} EGP
                     </span>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export default function CartPage() {
 
               {subtotal < 100 && (
                 <p className="text-sm text-gray-600 mb-4">
-                  Add ${(100 - subtotal).toFixed(2)} more for free shipping!
+                  Add {(100 - subtotal).toFixed(2)} EGP more for free shipping!
                 </p>
               )}
 

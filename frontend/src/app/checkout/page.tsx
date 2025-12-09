@@ -334,7 +334,7 @@ export default function CheckoutPage() {
                       <p className="font-medium text-sm truncate">{item.product?.name}</p>
                       <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                       <p className="text-sm font-semibold text-primary-600">
-                        ${((item.product?.price || 0) * item.quantity).toFixed(2)}
+                        {((item.product?.price || 0) * item.quantity).toFixed(2)} EGP
                       </p>
                     </div>
                   </div>
@@ -344,15 +344,15 @@ export default function CheckoutPage() {
               <div className="space-y-2 py-4 border-t">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>{subtotal.toFixed(2)} EGP</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</span>
+                  <span>{shipping === 0 ? 'FREE' : `${shipping.toFixed(2)} EGP`}</span>
                 </div>
                 <div className="flex justify-between text-lg font-bold pt-2 border-t">
                   <span>Total</span>
-                  <span className="text-primary-600">${total.toFixed(2)}</span>
+                  <span className="text-primary-600">{total.toFixed(2)} EGP</span>
                 </div>
               </div>
 

@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { api } from '@/lib/api';
 import { toast } from 'react-toastify';
-import { FiCreditCard, FiLock, FiUser, FiLogIn } from 'react-icons/fi';
+import { FiLock, FiUser, FiLogIn, FiDollarSign } from 'react-icons/fi';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -23,7 +23,7 @@ export default function CheckoutPage() {
     state: '',
     zipCode: '',
     country: 'USA',
-    paymentMethod: 'card',
+    paymentMethod: 'cash',
   });
 
   // Pre-fill form with user data if authenticated
@@ -266,49 +266,49 @@ export default function CheckoutPage() {
             {/* Payment Information */}
             <div className="card">
               <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                <FiCreditCard />
+                <FiDollarSign />
                 Payment Method
               </h2>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <input
                     type="radio"
-                    id="card"
+                    id="cash"
                     name="payment"
-                    value="card"
-                    checked={formData.paymentMethod === 'card'}
+                    value="cash"
+                    checked={formData.paymentMethod === 'cash'}
                     onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                     className="w-4 h-4"
                   />
-                  <label htmlFor="card" className="flex items-center gap-2">
-                    <FiCreditCard />
-                    Credit/Debit Card
+                  <label htmlFor="cash" className="flex items-center gap-2">
+                    <FiDollarSign />
+                    Cash on Delivery
                   </label>
                 </div>
                 <div className="flex items-center gap-4">
                   <input
                     type="radio"
-                    id="paypal"
+                    id="instapay"
                     name="payment"
-                    value="paypal"
-                    checked={formData.paymentMethod === 'paypal'}
+                    value="instapay"
+                    checked={formData.paymentMethod === 'instapay'}
                     onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                     className="w-4 h-4"
                   />
-                  <label htmlFor="paypal">PayPal</label>
+                  <label htmlFor="instapay">InstaPay Transfer</label>
                 </div>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="radio"
-                    id="cod"
-                    name="payment"
-                    value="cod"
-                    checked={formData.paymentMethod === 'cod'}
-                    onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                    className="w-4 h-4"
-                  />
-                  <label htmlFor="cod">Cash on Delivery</label>
-                </div>
+                
+                {formData.paymentMethod === 'instapay' && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-800 font-medium mb-2">InstaPay Transfer Instructions:</p>
+                    <p className="text-sm text-blue-700">
+                      Transfer the total amount to our InstaPay account. Your order will be confirmed once payment is received.
+                    </p>
+                    <p className="text-sm text-blue-800 font-semibold mt-2">
+                      InstaPay Number: 01XXXXXXXXX
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

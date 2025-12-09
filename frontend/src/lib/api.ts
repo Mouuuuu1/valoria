@@ -106,15 +106,7 @@ class ApiClient {
     await this.client.delete(`/products/${id}`);
   }
 
-  // Upload endpoints
-  async uploadImages(formData: FormData) {
-    const { data } = await this.client.post<ApiResponse<{ urls: string[] }>>('/upload/multiple', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return data.data!;
-  }
+
 
   // Cart endpoints
   async getCart() {

@@ -302,10 +302,10 @@ export default function CheckoutPage() {
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-800 font-medium mb-2">InstaPay Transfer Instructions:</p>
                     <p className="text-sm text-blue-700">
-                      Transfer the total amount to our InstaPay account. Your order will be confirmed once payment is received.
+                      Transfer the total amount to our InstaPay wallet. Your order will be confirmed once payment is received.
                     </p>
                     <p className="text-sm text-blue-800 font-semibold mt-2">
-                      InstaPay Number: 01XXXXXXXXX
+                      InstaPay Wallet: 01110241005
                     </p>
                   </div>
                 )}

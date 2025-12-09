@@ -29,39 +29,43 @@ export default function ContactPage() {
     {
       icon: FiMail,
       title: 'Email',
-      details: 'support@valoria.com',
+      details: 'valoria.eg@gmail.com',
       subDetails: 'We reply within 24 hours',
     },
     {
       icon: FiPhone,
-      title: 'Phone',
-      details: '+1 (555) 123-4567',
-      subDetails: 'Mon-Fri, 9am-6pm EST',
+      title: 'Phone / WhatsApp',
+      details: '+20 111 024 1005',
+      subDetails: 'Available daily',
     },
     {
       icon: FiClock,
       title: 'Business Hours',
-      details: 'Monday - Friday',
-      subDetails: '9:00 AM - 6:00 PM EST',
+      details: 'Saturday - Thursday',
+      subDetails: '10:00 AM - 10:00 PM Cairo Time',
     },
   ];
 
   const faqs = [
     {
-      question: 'What is your return policy?',
-      answer: 'We offer a 30-day return policy on all unworn items with original tags attached. Simply contact us to initiate a return.',
+      question: 'What is your return/refund policy?',
+      answer: 'For first-time orders, we provide a checkup of the bag with the courier in front of you. Once the courier leaves, no refund is available. For second-time customers, we offer a 48-hour refund window.',
     },
     {
-      question: 'How long does shipping take?',
-      answer: 'Standard shipping takes 5-7 business days. Express shipping (2-3 days) is available for an additional fee.',
+      question: 'Do you offer any discounts?',
+      answer: 'Yes! On your second order with us, you will receive a 20% discount on all products as a loyal customer reward.',
     },
     {
-      question: 'Do you ship internationally?',
-      answer: 'Yes! We ship to over 50 countries worldwide. International shipping times vary by location.',
+      question: 'What payment methods do you accept?',
+      answer: 'We accept Cash on Delivery (COD) and InstaPay wallet transfers only. We do not accept Visa or Mastercard.',
     },
     {
-      question: 'How can I track my order?',
-      answer: 'Once your order ships, you\'ll receive an email with tracking information. You can also track your order in your account.',
+      question: 'Where do you ship?',
+      answer: 'We currently ship within Egypt only. All prices are in Egyptian Pounds (EGP).',
+    },
+    {
+      question: 'Are your bags authentic?',
+      answer: 'We sell imported bags from famous brands including Coach, Michael Kors, and Chanel.',
     },
   ];
 

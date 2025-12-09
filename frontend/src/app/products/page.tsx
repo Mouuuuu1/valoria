@@ -17,7 +17,7 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  const categories = ['handbag', 'tote', 'crossbody', 'clutch', 'shoulder', 'backpack', 'wallet'];
+  const categories = ['satchel', 'handbag', 'crossbody', 'shoulder', 'shopper', 'wallet'];
 
   useEffect(() => {
     loadProducts();

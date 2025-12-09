@@ -333,12 +333,12 @@ function ProductModal({
                 className="input-field"
                 required
               >
-                <option value="TOTE">Tote</option>
-                <option value="CROSSBODY">Crossbody</option>
-                <option value="SHOULDER">Shoulder</option>
-                <option value="CLUTCH">Clutch</option>
-                <option value="BACKPACK">Backpack</option>
-                <option value="EVENING">Evening</option>
+                <option value="SATCHEL">Satchel Bags</option>
+                <option value="HANDBAG">Handbags</option>
+                <option value="CROSSBODY">Crossbody Bags</option>
+                <option value="SHOULDER">Shoulder Bags</option>
+                <option value="SHOPPER">Shopper Bags</option>
+                <option value="WALLET">Wallets & Cardholders</option>
               </select>
             </div>
 

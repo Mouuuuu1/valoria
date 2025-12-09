@@ -8,9 +8,9 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-bold text-primary-400 mb-4">Valorina</h3>
+            <h3 className="text-2xl font-bold text-primary-400 mb-4">Valoria</h3>
             <p className="text-gray-400">
-              Premium women's bags for the modern, sophisticated woman.
+              Premium imported bags from famous brands like Coach, Michael Kors, and Chanel.
             </p>
           </div>
 

@@ -2,47 +2,29 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { FiHeart, FiAward, FiGlobe, FiUsers } from 'react-icons/fi';
+import { FiHeart, FiAward, FiShield, FiUsers } from 'react-icons/fi';
 
 export default function AboutPage() {
   const values = [
     {
       icon: FiHeart,
-      title: 'Crafted with Love',
-      description: 'Every bag is designed with passion and attention to detail, ensuring you receive a product that speaks to your style.',
+      title: 'Authentic Brands',
+      description: 'We import bags from world-renowned brands like Coach, Michael Kors, and Chanel, ensuring you get genuine quality.',
     },
     {
       icon: FiAward,
       title: 'Premium Quality',
-      description: 'We use only the finest materials and craftsmanship to create bags that are built to last.',
+      description: 'Every bag we sell meets the highest standards of craftsmanship and durability.',
     },
     {
-      icon: FiGlobe,
-      title: 'Sustainable Fashion',
-      description: 'We are committed to ethical sourcing and sustainable practices to protect our planet.',
+      icon: FiShield,
+      title: 'Customer Trust',
+      description: 'First-time buyers can inspect their bag with the courier. Returning customers enjoy a 48-hour refund window.',
     },
     {
       icon: FiUsers,
-      title: 'Customer First',
-      description: 'Your satisfaction is our priority. We are here to help you find the perfect bag for every occasion.',
-    },
-  ];
-
-  const team = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Founder & Creative Director',
-      image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Head of Design',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop',
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Operations Manager',
-      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop',
+      title: 'Loyal Rewards',
+      description: 'We value our customers — enjoy 20% off on your second order as our way of saying thank you.',
     },
   ];
 
@@ -53,8 +35,8 @@ export default function AboutPage() {
         <div className="text-center max-w-3xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">About Valoria</h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            At Valoria, we believe that a bag is more than just an accessory — it's an expression of who you are. 
-            Since our founding, we've been dedicated to creating timeless, elegant bags that combine style with functionality.
+            Valoria brings you premium imported bags from the world's most loved brands. 
+            Based in Egypt, we're dedicated to offering authentic, stylish bags that make a statement.
           </p>
         </div>
       </section>
@@ -67,25 +49,25 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mb-6">Our Story</h2>
               <div className="space-y-4 text-gray-600">
                 <p>
-                  Valoria was born from a simple idea: to create bags that women truly love to carry. 
-                  What started as a small passion project in 2020 has grown into a beloved brand known for 
-                  its commitment to quality and style.
+                  Valoria was founded in 2025 with a passion for bringing the finest imported bags 
+                  to Egypt. We noticed that fashion-forward Egyptians deserved better access to 
+                  premium brands without the hassle of international shopping.
                 </p>
                 <p>
-                  Our founder, Sarah Johnson, noticed a gap in the market — bags that were either stylish 
-                  but impractical, or functional but lacking in design. She set out to bridge that gap, 
-                  and Valoria was born.
+                  We carefully curate our collection from famous brands including Coach, Michael Kors, 
+                  and Chanel, ensuring every piece meets our high standards for quality and style.
                 </p>
                 <p>
-                  Today, we continue to push the boundaries of design while staying true to our core values: 
-                  quality craftsmanship, timeless elegance, and customer satisfaction.
+                  Our commitment to customer satisfaction sets us apart. First-time customers can 
+                  inspect their purchase with our courier, and loyal returning customers enjoy 
+                  extended refund policies and exclusive discounts.
                 </p>
               </div>
             </div>
             <div className="relative h-96 rounded-lg overflow-hidden shadow-xl">
               <Image
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&h=400&fit=crop"
-                alt="Our Workshop"
+                src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&h=400&fit=crop"
+                alt="Luxury Bags Collection"
                 fill
                 className="object-cover"
               />
@@ -96,7 +78,7 @@ export default function AboutPage() {
 
       {/* Values Section */}
       <section className="container-custom mb-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Our Values</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">Why Choose Valoria</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {values.map((value, index) => (
             <div key={index} className="card text-center">
@@ -110,25 +92,17 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Brands Section */}
       <section className="bg-gray-50 py-16 mb-16">
-        <div className="container-custom">
-          <h2 className="text-3xl font-bold text-center mb-12">Meet Our Team</h2>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {team.map((member, index) => (
-              <div key={index} className="card text-center">
-                <div className="relative w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <h3 className="text-lg font-semibold">{member.name}</h3>
-                <p className="text-gray-600">{member.role}</p>
-              </div>
-            ))}
+        <div className="container-custom text-center">
+          <h2 className="text-3xl font-bold mb-8">Brands We Carry</h2>
+          <p className="text-xl text-gray-600 mb-8">
+            We import from world-renowned fashion houses
+          </p>
+          <div className="flex flex-wrap justify-center gap-8 text-2xl font-semibold text-gray-700">
+            <span className="px-6 py-3 bg-white rounded-lg shadow">Coach</span>
+            <span className="px-6 py-3 bg-white rounded-lg shadow">Michael Kors</span>
+            <span className="px-6 py-3 bg-white rounded-lg shadow">Chanel</span>
           </div>
         </div>
       </section>
@@ -138,7 +112,7 @@ export default function AboutPage() {
         <div className="card bg-primary-600 text-white text-center py-12">
           <h2 className="text-3xl font-bold mb-4">Ready to Find Your Perfect Bag?</h2>
           <p className="text-xl mb-8 opacity-90">
-            Browse our collection and discover the bag that speaks to your style.
+            Browse our collection of authentic imported bags from top brands.
           </p>
           <Link href="/products" className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-block">
             Shop Now

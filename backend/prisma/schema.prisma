@@ -137,12 +137,12 @@ enum Role {
 }
 
 enum Category {
-  TOTE
+  SATCHEL
+  HANDBAG
   CROSSBODY
   SHOULDER
-  CLUTCH
-  BACKPACK
-  EVENING
+  SHOPPER
+  WALLET
 }
 
 enum OrderStatus {

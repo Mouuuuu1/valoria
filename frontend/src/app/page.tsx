@@ -33,19 +33,19 @@ export default function Home() {
         <div className="container-custom">
           <div className="max-w-3xl">
             <h1 className="text-5xl font-bold mb-6">
-              Discover Your Perfect Bag
+              Premium Imported Bags
             </h1>
             <p className="text-xl mb-8 text-primary-50">
-              Explore our exclusive collection of premium women's bags. 
-              Elegance meets functionality in every design.
+              Discover authentic bags from Coach, Michael Kors, Chanel and more. 
+              Luxury brands delivered to your doorstep in Egypt.
             </p>
             <div className="flex gap-4">
               <Link href="/products" className="bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors inline-flex items-center gap-2">
                 Shop Now
                 <FiArrowRight />
               </Link>
-              <Link href="/products?featured=true" className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors">
-                View Collection
+              <Link href="/about" className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary-600 transition-colors">
+                Learn More
               </Link>
             </div>
           </div>
@@ -56,11 +56,11 @@ export default function Home() {
       <section className="py-16 bg-white">
         <div className="container-custom">
           <h2 className="text-3xl font-bold text-center mb-12">Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {['Handbag', 'Tote', 'Crossbody', 'Clutch', 'Shoulder', 'Backpack', 'Wallet'].map((category) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+            {['Satchel Bags', 'Handbags', 'Crossbody Bags', 'Shoulder Bags', 'Shopper Bags', 'Wallets & Cardholders'].map((category) => (
               <Link
                 key={category}
-                href={`/products?category=${category.toLowerCase()}`}
+                href={`/products?category=${category.split(' ')[0].toLowerCase()}`}
                 className="card text-center hover:shadow-lg transition-shadow cursor-pointer group"
               >
                 <FiShoppingBag className="mx-auto text-5xl text-primary-600 mb-4 group-hover:scale-110 transition-transform" />

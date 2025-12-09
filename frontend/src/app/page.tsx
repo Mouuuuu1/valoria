@@ -142,18 +142,18 @@ export default function Home() {
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FiShoppingBag className="text-3xl text-primary-600" />
               </div>
-              <h3 className="font-bold text-xl mb-2">Free Shipping</h3>
+              <h3 className="font-bold text-xl mb-2">Authentic Imports</h3>
               <p className="text-gray-600">
-                Complimentary shipping on all orders over $100
+                Genuine bags imported from top international brands
               </p>
             </div>
             <div className="text-center">
               <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FiShoppingBag className="text-3xl text-primary-600" />
               </div>
-              <h3 className="font-bold text-xl mb-2">30-Day Returns</h3>
+              <h3 className="font-bold text-xl mb-2">Secure Payment</h3>
               <p className="text-gray-600">
-                Not satisfied? Return within 30 days for a full refund
+                Pay safely with Cash on Delivery or InstaPay
               </p>
             </div>
           </div>

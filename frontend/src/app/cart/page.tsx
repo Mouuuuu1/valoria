@@ -149,12 +149,6 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {subtotal < 100 && (
-                <p className="text-sm text-gray-600 mb-4">
-                  Add {(100 - subtotal).toFixed(2)} EGP more for free shipping!
-                </p>
-              )}
-
               <Link href="/checkout" className="btn-primary w-full block text-center">
                 Proceed to Checkout
               </Link>

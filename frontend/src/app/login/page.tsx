@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -10,19 +10,33 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const router = useRouter();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (isAdmin) {
+        router.replace('/admin');
+      } else {
+        router.replace('/');
+      }
+    }
+  }, [isAuthenticated, isAdmin, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      console.log('Attempting login with:', email);
       await login(email, password);
-      router.push('/');
-    } catch (error) {
+      console.log('Login successful, redirecting...');
+      // Force redirect using window.location for reliable navigation
+      window.location.href = '/';
+    } catch (error: any) {
       console.error('Login error:', error);
-    } finally {
+      console.error('Error response:', error?.response?.data);
       setLoading(false);
     }
   };

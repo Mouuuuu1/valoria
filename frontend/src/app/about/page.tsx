@@ -92,21 +92,6 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Brands Section */}
-      <section className="bg-gray-50 py-16 mb-16">
-        <div className="container-custom text-center">
-          <h2 className="text-3xl font-bold mb-8">Brands We Carry</h2>
-          <p className="text-xl text-gray-600 mb-8">
-            We import from world-renowned fashion houses
-          </p>
-          <div className="flex flex-wrap justify-center gap-8 text-2xl font-semibold text-gray-700">
-            <span className="px-6 py-3 bg-white rounded-lg shadow">Coach</span>
-            <span className="px-6 py-3 bg-white rounded-lg shadow">Michael Kors</span>
-            <span className="px-6 py-3 bg-white rounded-lg shadow">Chanel</span>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="container-custom">
         <div className="card bg-primary-600 text-white text-center py-12">

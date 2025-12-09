@@ -45,10 +45,14 @@ export class AuthService {
 
   // Login user
   async login(email: string, password: string): Promise<{ user: Omit<User, 'password'>; token: string }> {
+    console.log('Login attempt for email:', email);
+    
     // Find user with password field
     const user = await prisma.user.findUnique({
       where: { email },
     });
+
+    console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
       throw new AppError('Invalid email or password', 401);
@@ -56,6 +60,7 @@ export class AuthService {
 
     // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log('Password valid:', isPasswordValid);
 
     if (!isPasswordValid) {
       throw new AppError('Invalid email or password', 401);

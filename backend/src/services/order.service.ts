@@ -1,6 +1,7 @@
 import { prisma } from '../config/database';
 import { Order, OrderStatus, PaymentStatus } from '../types/prisma';
 import { AppError } from '../middleware/error.middleware';
+import { sendOrderEmails } from './email.service';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -103,7 +104,33 @@ export class OrderService {
     });
 
     // Get full order with items
-    return this.getOrderById(order.id);
+    const fullOrder = await this.getOrderById(order.id);
+
+    // Send confirmation emails (don't await - run in background)
+    const shippingInfo = shippingAddress as ShippingAddress;
+    sendOrderEmails({
+      orderNumber: fullOrder.orderNumber,
+      customerName: shippingInfo.fullName || 'Valued Customer',
+      customerEmail: guestEmail,
+      customerPhone: shippingInfo.phone || '',
+      shippingAddress: {
+        street: shippingInfo.street,
+        city: shippingInfo.city,
+        state: shippingInfo.state,
+        zipCode: shippingInfo.zipCode,
+      },
+      items: (fullOrder as any).items.map((item: any) => ({
+        product: { name: item.product.name, price: item.product.price },
+        quantity: item.quantity,
+        price: item.price * item.quantity,
+      })),
+      subtotal: fullOrder.totalAmount,
+      shipping: 0, // Add shipping calculation if needed
+      total: fullOrder.totalAmount,
+      paymentMethod: paymentMethod || 'cash',
+    }).catch(err => console.error('Failed to send order emails:', err));
+
+    return fullOrder;
   }
 
   // Get guest order by order number and email
@@ -218,6 +245,45 @@ export class OrderService {
 
       return newOrder;
     });
+
+    // Get full order with items and user info
+    const fullOrder = await prisma.order.findUnique({
+      where: { id: order.id },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        user: true,
+      },
+    });
+
+    // Send confirmation emails (run in background)
+    if (fullOrder && fullOrder.user) {
+      const shippingInfo = shippingAddress as ShippingAddress;
+      sendOrderEmails({
+        orderNumber: fullOrder.orderNumber,
+        customerName: fullOrder.user.name,
+        customerEmail: fullOrder.user.email,
+        customerPhone: shippingInfo.phone || fullOrder.user.phone || '',
+        shippingAddress: {
+          street: shippingInfo.street,
+          city: shippingInfo.city,
+          state: shippingInfo.state,
+          zipCode: shippingInfo.zipCode,
+        },
+        items: fullOrder.items.map((item: any) => ({
+          product: { name: item.product.name, price: item.product.price },
+          quantity: item.quantity,
+          price: item.price * item.quantity,
+        })),
+        subtotal: fullOrder.totalAmount,
+        shipping: 0,
+        total: fullOrder.totalAmount,
+        paymentMethod: paymentMethod || 'cash',
+      }).catch(err => console.error('Failed to send order emails:', err));
+    }
 
     return order;
   }

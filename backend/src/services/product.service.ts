@@ -102,6 +102,32 @@ export class ProductService {
 
   // Delete product (Admin only)
   async deleteProduct(productId: string): Promise<void> {
+    // First check if product exists
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      throw new AppError('Product not found', 404);
+    }
+
+    // Check if product is referenced in any orders
+    const orderItemsCount = await prisma.orderItem.count({
+      where: { productId },
+    });
+
+    if (orderItemsCount > 0) {
+      throw new AppError(
+        'Cannot delete this product because it has been ordered. Consider updating stock to 0 instead.',
+        400
+      );
+    }
+
+    // Also delete from any carts first
+    await prisma.cartItem.deleteMany({
+      where: { productId },
+    });
+
     await prisma.product.delete({
       where: { id: productId },
     });

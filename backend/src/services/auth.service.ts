@@ -102,6 +102,22 @@ export class AuthService {
     return userWithoutPassword;
   }
 
+  // Get all users (Admin only)
+  async getAllUsers(page: number = 1, limit: number = 100): Promise<Omit<User, 'password'>[]> {
+    const users = await prisma.user.findMany({
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return users.map(user => {
+      const { password: _, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
+  }
+
   // Generate JWT token
   private generateToken(userId: string): string {
     return jwt.sign(

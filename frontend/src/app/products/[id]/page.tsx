@@ -48,7 +48,7 @@ export default function ProductDetailPage() {
 
     setAdding(true);
     try {
-      await addToCart(product._id, quantity);
+      await addToCart(product.id, quantity);
     } catch (error) {
       console.error('Failed to add to cart:', error);
     } finally {

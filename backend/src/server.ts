@@ -3,12 +3,14 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import path from 'path';
 import { connectDatabase } from './config/database';
 import authRoutes from './routes/auth.routes';
 import productRoutes from './routes/product.routes';
 import cartRoutes from './routes/cart.routes';
 import orderRoutes from './routes/order.routes';
 import userRoutes from './routes/user.routes';
+import uploadRoutes from './routes/upload.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 // Load environment variables
@@ -28,12 +30,16 @@ app.use(morgan('dev')); // Logging
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {

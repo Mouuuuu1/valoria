@@ -6,7 +6,7 @@ class ApiClient {
 
   constructor() {
     this.client = axios.create({
-      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+      baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001/api',
       headers: {
         'Content-Type': 'application/json',
       },
@@ -106,6 +106,16 @@ class ApiClient {
     await this.client.delete(`/products/${id}`);
   }
 
+  // Upload endpoints
+  async uploadImages(formData: FormData) {
+    const { data } = await this.client.post<ApiResponse<{ urls: string[] }>>('/upload/multiple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data.data!;
+  }
+
   // Cart endpoints
   async getCart() {
     const { data } = await this.client.get<ApiResponse<{ cart: Cart }>>('/cart');
@@ -188,6 +198,16 @@ class ApiClient {
   async getAllUsers(page?: number, limit?: number) {
     const { data } = await this.client.get<ApiResponse<PaginationResult<User>>>('/users', {
       params: { page, limit },
+    });
+    return data.data!;
+  }
+
+  // Upload images
+  async uploadImages(formData: FormData) {
+    const { data } = await this.client.post<ApiResponse<{ urls: string[] }>>('/upload/multiple', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     return data.data!;
   }

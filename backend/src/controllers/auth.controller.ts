@@ -64,7 +64,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 // @route   GET /api/auth/me
 // @access  Private
 export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const user = await authService.getUserById(req.user._id);
+  const user = await authService.getUserById(req.user.id);
 
   res.status(200).json({
     status: 'success',
@@ -78,12 +78,29 @@ export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
 // @route   PUT /api/auth/profile
 // @access  Private
 export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const user = await authService.updateProfile(req.user._id, req.body);
+  const user = await authService.updateProfile(req.user.id, req.body);
 
   res.status(200).json({
     status: 'success',
     data: {
       user
+    }
+  });
+});
+
+// @desc    Get all users
+// @route   GET /api/auth/users
+// @access  Private/Admin
+export const getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const page = req.query.page ? Number(req.query.page) : 1;
+  const limit = req.query.limit ? Number(req.query.limit) : 100;
+  
+  const users = await authService.getAllUsers(page, limit);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      users
     }
   });
 });

@@ -56,7 +56,7 @@ export const productValidation: ValidationChain[] = [
     .trim()
     .notEmpty()
     .withMessage('Category is required')
-    .isIn(['handbag', 'tote', 'crossbody', 'clutch', 'shoulder', 'backpack', 'wallet'])
+    .isIn(['HANDBAG', 'TOTE', 'CROSSBODY', 'CLUTCH', 'SHOULDER', 'BACKPACK', 'WALLET', 'EVENING', 'handbag', 'tote', 'crossbody', 'clutch', 'shoulder', 'backpack', 'wallet', 'evening'])
     .withMessage('Invalid category'),
   body('images')
     .isArray({ min: 1 })
@@ -72,7 +72,7 @@ export const cartItemValidation: ValidationChain[] = [
   body('productId')
     .notEmpty()
     .withMessage('Product ID is required')
-    .isMongoId()
+    .isUUID()
     .withMessage('Invalid product ID'),
   body('quantity')
     .notEmpty()
@@ -117,6 +117,6 @@ export const orderValidation: ValidationChain[] = [
 
 export const idValidation: ValidationChain[] = [
   param('id')
-    .isMongoId()
+    .isUUID()
     .withMessage('Invalid ID format')
 ];

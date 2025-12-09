@@ -1,8 +1,9 @@
 export interface User {
-  _id: string;
+  id: string;
   name: string;
   email: string;
   role: 'customer' | 'admin';
+  phone?: string;
   address?: {
     street?: string;
     city?: string;
@@ -15,7 +16,7 @@ export interface User {
 }
 
 export interface Product {
-  _id: string;
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -35,16 +36,20 @@ export interface Product {
 }
 
 export interface CartItem {
-  productId: Product;
+  id?: string;
+  productId: string;
+  product?: Product;
   quantity: number;
-  addedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Cart {
-  _id: string;
+  id: string;
   userId: string;
   items: CartItem[];
-  total: number;
+  total?: number;
+  createdAt?: string;
   updatedAt: string;
 }
 
@@ -67,7 +72,7 @@ export interface OrderItem {
 }
 
 export interface Order {
-  _id: string;
+  id: string;
   userId: string;
   orderNumber: string;
   items: OrderItem[];

@@ -90,8 +90,8 @@ export default function Home() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProducts.map((product) => (
                 <Link
-                  key={product._id}
-                  href={`/products/${product._id}`}
+                  key={product.id}
+                  href={`/products/${product.id}`}
                   className="card hover:shadow-lg transition-shadow group"
                 >
                   <div className="relative h-64 mb-4 overflow-hidden rounded-lg bg-gray-100">

@@ -111,8 +111,8 @@ export default function ProductsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {products.map((product) => (
                 <Link
-                  key={product._id}
-                  href={`/products/${product._id}`}
+                  key={product.id}
+                  href={`/products/${product.id}`}
                   className="card hover:shadow-lg transition-shadow group"
                 >
                   <div className="relative h-64 mb-4 overflow-hidden rounded-lg bg-gray-100">

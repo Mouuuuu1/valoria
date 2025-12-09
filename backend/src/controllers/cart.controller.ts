@@ -10,7 +10,7 @@ const cartService = new CartService();
 // @route   GET /api/cart
 // @access  Private
 export const getCart = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const cart = await cartService.getCart(req.user._id);
+  const cart = await cartService.getCart(req.user.id);
 
   res.status(200).json({
     status: 'success',
@@ -36,7 +36,7 @@ export const addToCart = asyncHandler(async (req: AuthRequest, res: Response) =>
 
   const { productId, quantity } = req.body;
 
-  const cart = await cartService.addToCart(req.user._id, productId, quantity);
+  const cart = await cartService.addToCart(req.user.id, productId, quantity);
 
   res.status(200).json({
     status: 'success',
@@ -61,7 +61,7 @@ export const updateCartItem = asyncHandler(async (req: AuthRequest, res: Respons
   }
 
   const cart = await cartService.updateCartItem(
-    req.user._id,
+    req.user.id,
     req.params.productId,
     quantity
   );
@@ -78,7 +78,7 @@ export const updateCartItem = asyncHandler(async (req: AuthRequest, res: Respons
 // @route   DELETE /api/cart/:productId
 // @access  Private
 export const removeFromCart = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const cart = await cartService.removeFromCart(req.user._id, req.params.productId);
+  const cart = await cartService.removeFromCart(req.user.id, req.params.productId);
 
   res.status(200).json({
     status: 'success',
@@ -92,7 +92,7 @@ export const removeFromCart = asyncHandler(async (req: AuthRequest, res: Respons
 // @route   DELETE /api/cart
 // @access  Private
 export const clearCart = asyncHandler(async (req: AuthRequest, res: Response) => {
-  await cartService.clearCart(req.user._id);
+  await cartService.clearCart(req.user.id);
 
   res.status(200).json({
     status: 'success',

@@ -40,7 +40,7 @@ export const createOrder = asyncHandler(async (req: AuthRequest, res: Response) 
 // @route   GET /api/orders
 // @access  Private
 export const getUserOrders = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const orders = await orderService.getUserOrders(req.user._id);
+  const orders = await orderService.getUserOrders(req.user.id);
 
   res.status(200).json({
     status: 'success',
@@ -54,7 +54,7 @@ export const getUserOrders = asyncHandler(async (req: AuthRequest, res: Response
 // @route   GET /api/orders/:id
 // @access  Private
 export const getOrderById = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const userId = req.user.role === 'admin' ? undefined : req.user._id;
+  const userId = req.user.role === 'admin' ? undefined : req.user.id;
   const order = await orderService.getOrderById(req.params.id, userId);
 
   res.status(200).json({
@@ -81,12 +81,15 @@ export const getAllOrders = asyncHandler(async (req: AuthRequest, res: Response)
 // @route   PUT /api/orders/:id/status
 // @access  Private/Admin
 export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
-  const { orderStatus } = req.body;
+  const { orderStatus, paymentStatus } = req.body;
 
-  const order = await orderService.updateOrderStatus(
-    req.params.id,
-    orderStatus
-  );
+  let order;
+  if (orderStatus) {
+    order = await orderService.updateOrderStatus(req.params.id, orderStatus);
+  }
+  if (paymentStatus) {
+    order = await orderService.updatePaymentStatus(req.params.id, paymentStatus);
+  }
 
   res.status(200).json({
     status: 'success',

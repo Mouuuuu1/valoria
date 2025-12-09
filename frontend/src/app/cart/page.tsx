@@ -54,6 +54,15 @@ export default function CartPage() {
     );
   }
 
+  // Calculate total from items
+  const subtotal = cart.items.reduce((sum, item) => {
+    const price = item.product?.price || 0;
+    return sum + (price * item.quantity);
+  }, 0);
+
+  const shipping = subtotal >= 100 ? 0 : 10;
+  const total = subtotal + shipping;
+
   return (
     <div className="py-12">
       <div className="container-custom">
@@ -63,13 +72,13 @@ export default function CartPage() {
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {cart.items.map((item) => (
-              <div key={item.productId._id} className="card">
+              <div key={item.product?.id || item.productId} className="card">
                 <div className="flex gap-4">
                   {/* Image */}
                   <div className="relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
                     <Image
-                      src={item.productId.images[0]}
-                      alt={item.productId.name}
+                      src={item.product?.images?.[0] || '/placeholder.jpg'}
+                      alt={item.product?.name || 'Product'}
                       fill
                       className="object-cover"
                     />
@@ -78,14 +87,14 @@ export default function CartPage() {
                   {/* Details */}
                   <div className="flex-1">
                     <Link
-                      href={`/products/${item.productId._id}`}
+                      href={`/products/${item.product?.id || item.productId}`}
                       className="font-semibold hover:text-primary-600"
                     >
-                      {item.productId.name}
+                      {item.product?.name || 'Product'}
                     </Link>
-                    <p className="text-sm text-gray-600">{item.productId.category}</p>
+                    <p className="text-sm text-gray-600">{item.product?.category}</p>
                     <p className="text-primary-600 font-bold mt-2">
-                      ${item.productId.price.toFixed(2)}
+                      ${item.product?.price?.toFixed(2) || '0.00'}
                     </p>
                   </div>
 
@@ -94,7 +103,7 @@ export default function CartPage() {
                     <div className="flex items-center border rounded-lg">
                       <button
                         onClick={() =>
-                          updateQuantity(item.productId._id, Math.max(1, item.quantity - 1))
+                          updateQuantity(item.product?.id || item.productId, Math.max(1, item.quantity - 1))
                         }
                         className="p-2 hover:bg-gray-100"
                       >
@@ -104,18 +113,18 @@ export default function CartPage() {
                       <button
                         onClick={() =>
                           updateQuantity(
-                            item.productId._id,
-                            Math.min(item.productId.stock, item.quantity + 1)
+                            item.product?.id || item.productId,
+                            Math.min(item.product?.stock || 999, item.quantity + 1)
                           )
                         }
                         className="p-2 hover:bg-gray-100"
-                        disabled={item.quantity >= item.productId.stock}
+                        disabled={item.quantity >= (item.product?.stock || 0)}
                       >
                         <FiPlus size={14} />
                       </button>
                     </div>
                     <button
-                      onClick={() => removeItem(item.productId._id)}
+                      onClick={() => removeItem(item.product?.id || item.productId)}
                       className="text-red-600 hover:text-red-700 flex items-center gap-1 text-sm"
                     >
                       <FiTrash2 size={14} />
@@ -135,27 +144,27 @@ export default function CartPage() {
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">${cart.total.toFixed(2)}</span>
+                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="font-semibold">
-                    {cart.total >= 100 ? 'FREE' : '$10.00'}
+                    {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
                   </span>
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
                     <span className="text-primary-600">
-                      ${(cart.total + (cart.total >= 100 ? 0 : 10)).toFixed(2)}
+                      ${total.toFixed(2)}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {cart.total < 100 && (
+              {subtotal < 100 && (
                 <p className="text-sm text-gray-600 mb-4">
-                  Add ${(100 - cart.total).toFixed(2)} more for free shipping!
+                  Add ${(100 - subtotal).toFixed(2)} more for free shipping!
                 </p>
               )}
 

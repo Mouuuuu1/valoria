@@ -28,6 +28,12 @@ export default function Navbar() {
             <Link href="/products" className="hover:text-primary-600 transition-colors">
               Products
             </Link>
+            <Link href="/about" className="hover:text-primary-600 transition-colors">
+              About
+            </Link>
+            <Link href="/contact" className="hover:text-primary-600 transition-colors">
+              Contact
+            </Link>
             {isAdmin && (
               <Link href="/admin" className="hover:text-primary-600 transition-colors">
                 Admin
@@ -109,6 +115,20 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Products
+              </Link>
+              <Link
+                href="/about"
+                className="hover:text-primary-600 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                About
+              </Link>
+              <Link
+                href="/contact"
+                className="hover:text-primary-600 transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Contact
               </Link>
               {isAdmin && (
                 <Link

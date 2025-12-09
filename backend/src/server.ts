@@ -10,6 +10,7 @@ import productRoutes from './routes/product.routes';
 import cartRoutes from './routes/cart.routes';
 import orderRoutes from './routes/order.routes';
 import userRoutes from './routes/user.routes';
+import uploadRoutes from './routes/upload.routes';
 import { errorHandler } from './middleware/error.middleware';
 
 // Load environment variables
@@ -38,6 +39,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {

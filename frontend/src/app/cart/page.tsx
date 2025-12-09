@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
@@ -9,19 +7,8 @@ import { useCart } from '@/context/CartContext';
 import { FiTrash2, FiMinus, FiPlus, FiShoppingBag } from 'react-icons/fi';
 
 export default function CartPage() {
-  const router = useRouter();
   const { isAuthenticated } = useAuth();
   const { cart, loading, updateQuantity, removeItem } = useCart();
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   if (loading) {
     return (

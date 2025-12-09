@@ -37,19 +37,21 @@ export default function Navbar() {
 
           {/* Right Side Icons */}
           <div className="flex items-center gap-4">
+            {/* Cart - Always visible */}
+            <Link
+              href="/cart"
+              className="relative hover:text-primary-600 transition-colors"
+            >
+              <FiShoppingCart className="text-2xl" />
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+            
             {isAuthenticated ? (
               <>
-                <Link
-                  href="/cart"
-                  className="relative hover:text-primary-600 transition-colors"
-                >
-                  <FiShoppingCart className="text-2xl" />
-                  {itemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {itemCount}
-                    </span>
-                  )}
-                </Link>
                 <Link
                   href="/profile"
                   className="hover:text-primary-600 transition-colors flex items-center gap-2"

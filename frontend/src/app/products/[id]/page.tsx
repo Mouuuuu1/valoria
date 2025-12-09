@@ -38,17 +38,12 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      toast.info('Please login to add items to cart');
-      router.push('/login');
-      return;
-    }
-
     if (!product) return;
 
     setAdding(true);
     try {
-      await addToCart(product.id, quantity);
+      // Pass the product data for guest cart
+      await addToCart(product.id, quantity, product);
     } catch (error) {
       console.error('Failed to add to cart:', error);
     } finally {

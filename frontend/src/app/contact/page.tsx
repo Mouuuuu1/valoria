@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { FiMail, FiPhone, FiMapPin, FiClock, FiSend, FiMessageCircle } from 'react-icons/fi';
+import { FiMail, FiPhone, FiClock, FiSend, FiMessageCircle } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 export default function ContactPage() {
@@ -37,12 +37,6 @@ export default function ContactPage() {
       title: 'Phone',
       details: '+1 (555) 123-4567',
       subDetails: 'Mon-Fri, 9am-6pm EST',
-    },
-    {
-      icon: FiMapPin,
-      title: 'Address',
-      details: '123 Fashion Street',
-      subDetails: 'New York, NY 10001',
     },
     {
       icon: FiClock,
@@ -86,7 +80,7 @@ export default function ContactPage() {
 
       {/* Contact Info Cards */}
       <section className="container-custom mb-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {contactInfo.map((info, index) => (
             <div key={index} className="card text-center hover:shadow-lg transition-shadow">
               <div className="inline-flex items-center justify-center w-14 h-14 bg-primary-100 text-primary-600 rounded-full mb-4">
@@ -100,10 +94,9 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* Contact Form & Map */}
+      {/* Contact Form */}
       <section className="container-custom mb-16">
-        <div className="grid lg:grid-cols-2 gap-12">
-          {/* Contact Form */}
+        <div className="max-w-2xl mx-auto">
           <div className="card">
             <div className="flex items-center gap-3 mb-6">
               <FiMessageCircle className="text-primary-600" size={28} />
@@ -174,22 +167,6 @@ export default function ContactPage() {
                 {loading ? 'Sending...' : 'Send Message'}
               </button>
             </form>
-          </div>
-
-          {/* Map / Store Image */}
-          <div className="card p-0 overflow-hidden">
-            <div className="h-full min-h-[400px] relative">
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d193595.15830869428!2d-74.11976397304903!3d40.69766374859258!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c24fa5d33f083b%3A0xc80b8f06e177fe62!2sNew%20York%2C%20NY%2C%20USA!5e0!3m2!1sen!2s!4v1702138800000!5m2!1sen!2s"
-                width="100%"
-                height="100%"
-                style={{ border: 0, minHeight: '400px' }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0"
-              />
-            </div>
           </div>
         </div>
       </section>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { User } from '@/types';
-import { FiSearch, FiMail, FiCalendar } from 'react-icons/fi';
+import { FiSearch, FiMail, FiCalendar, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 export default function AdminUsers() {
@@ -14,6 +14,7 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated || !isAdmin) {
@@ -32,6 +33,17 @@ export default function AdminUsers() {
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await api.deleteUser(userId);
+      toast.success('User deleted successfully');
+      setDeleteConfirm(null);
+      loadUsers();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete user');
     }
   };
 
@@ -85,7 +97,7 @@ export default function AdminUsers() {
                     </p>
                   </div>
                   <span className={`px-3 py-1 rounded text-sm font-medium ${
-                    u.role === 'admin' 
+                    u.role.toLowerCase() === 'admin' 
                       ? 'bg-purple-100 text-purple-800' 
                       : 'bg-gray-100 text-gray-800'
                   }`}>
@@ -116,6 +128,37 @@ export default function AdminUsers() {
                     </div>
                   )}
                 </div>
+
+                {/* Delete Button - only show for non-admin users */}
+                {u.role.toLowerCase() !== 'admin' && (
+                  <div className="mt-4 pt-4 border-t">
+                    {deleteConfirm === u.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-red-600">Delete this user?</span>
+                        <button
+                          onClick={() => handleDeleteUser(u.id)}
+                          className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setDeleteConfirm(null)}
+                          className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
+                        >
+                          No
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setDeleteConfirm(u.id)}
+                        className="flex items-center gap-2 text-red-600 hover:text-red-700 text-sm"
+                      >
+                        <FiTrash2 size={14} />
+                        Delete User
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             ))
           )}

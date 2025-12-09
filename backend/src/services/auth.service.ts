@@ -118,6 +118,32 @@ export class AuthService {
     });
   }
 
+  // Delete user (Admin only)
+  async deleteUser(userId: string): Promise<void> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new AppError('User not found', 404);
+    }
+
+    // Don't allow deleting admin users
+    if (user.role.toLowerCase() === 'admin') {
+      throw new AppError('Cannot delete admin users', 403);
+    }
+
+    // Delete user's cart first
+    await prisma.cart.deleteMany({
+      where: { userId },
+    });
+
+    // Delete user
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+  }
+
   // Generate JWT token
   private generateToken(userId: string): string {
     return jwt.sign(

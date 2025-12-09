@@ -156,6 +156,25 @@ class ApiClient {
     return data.data!.order;
   }
 
+  // Guest checkout - no authentication required
+  async createGuestOrder(orderData: {
+    items: { productId: string; quantity: number }[];
+    shippingAddress: any;
+    guestEmail: string;
+    paymentMethod?: string;
+  }) {
+    const { data } = await this.client.post<ApiResponse<{ order: Order; orderNumber: string }>>('/orders/guest', orderData);
+    return data.data!;
+  }
+
+  // Get guest order by order number
+  async getGuestOrder(orderNumber: string, email?: string) {
+    const { data } = await this.client.get<ApiResponse<{ order: Order }>>(`/orders/guest/${orderNumber}`, {
+      params: { email }
+    });
+    return data.data!.order;
+  }
+
   async getUserOrders() {
     const { data } = await this.client.get<ApiResponse<{ orders: Order[] }>>('/orders');
     return data.data!.orders;
@@ -196,10 +215,21 @@ class ApiClient {
   }
 
   async getAllUsers(page?: number, limit?: number) {
-    const { data } = await this.client.get<ApiResponse<PaginationResult<User>>>('/users', {
+    const { data } = await this.client.get<ApiResponse<PaginationResult<User>>>('/auth/users', {
       params: { page, limit },
     });
     return data.data!;
+  }
+
+  async deleteUser(id: string) {
+    await this.client.delete(`/auth/users/${id}`);
+  }
+
+  async updatePaymentStatus(id: string, paymentStatus: string) {
+    const { data } = await this.client.put<ApiResponse<{ order: Order }>>(`/orders/${id}/status`, {
+      paymentStatus,
+    });
+    return data.data!.order;
   }
 
   // Upload images

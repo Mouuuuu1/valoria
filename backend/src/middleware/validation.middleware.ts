@@ -115,6 +115,57 @@ export const orderValidation: ValidationChain[] = [
     .withMessage('Phone number is required')
 ];
 
+export const guestOrderValidation: ValidationChain[] = [
+  body('items')
+    .isArray({ min: 1 })
+    .withMessage('Order must have at least one item'),
+  body('items.*.productId')
+    .notEmpty()
+    .withMessage('Product ID is required')
+    .isUUID()
+    .withMessage('Invalid product ID'),
+  body('items.*.quantity')
+    .notEmpty()
+    .withMessage('Quantity is required')
+    .isInt({ min: 1 })
+    .withMessage('Quantity must be at least 1'),
+  body('guestEmail')
+    .trim()
+    .notEmpty()
+    .withMessage('Email is required for guest checkout')
+    .isEmail()
+    .withMessage('Please provide a valid email')
+    .normalizeEmail(),
+  body('shippingAddress.fullName')
+    .trim()
+    .notEmpty()
+    .withMessage('Full name is required'),
+  body('shippingAddress.street')
+    .trim()
+    .notEmpty()
+    .withMessage('Street address is required'),
+  body('shippingAddress.city')
+    .trim()
+    .notEmpty()
+    .withMessage('City is required'),
+  body('shippingAddress.state')
+    .trim()
+    .notEmpty()
+    .withMessage('State is required'),
+  body('shippingAddress.zipCode')
+    .trim()
+    .notEmpty()
+    .withMessage('ZIP code is required'),
+  body('shippingAddress.country')
+    .trim()
+    .notEmpty()
+    .withMessage('Country is required'),
+  body('shippingAddress.phone')
+    .trim()
+    .notEmpty()
+    .withMessage('Phone number is required')
+];
+
 export const idValidation: ValidationChain[] = [
   param('id')
     .isUUID()

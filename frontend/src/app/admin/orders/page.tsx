@@ -49,6 +49,19 @@ export default function AdminOrders() {
     }
   };
 
+  const updatePaymentStatus = async (orderId: string, status: string) => {
+    try {
+      await api.updatePaymentStatus(orderId, status);
+      toast.success('Payment status updated');
+      loadOrders();
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(null);
+      }
+    } catch (error) {
+      toast.error('Failed to update payment status');
+    }
+  };
+
   const filteredOrders = orders.filter(order =>
     order.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
     order.shippingAddress.fullName.toLowerCase().includes(search.toLowerCase())
@@ -206,10 +219,10 @@ export default function AdminOrders() {
                 </div>
               </div>
 
-              {/* Update Status */}
+              {/* Update Order Status */}
               <div className="mb-6">
                 <h3 className="font-semibold mb-3">Update Order Status</h3>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => updateOrderStatus(selectedOrder.id, 'PENDING')}
                     className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200"
@@ -239,6 +252,37 @@ export default function AdminOrders() {
                     className="px-4 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200"
                   >
                     Cancelled
+                  </button>
+                </div>
+              </div>
+
+              {/* Update Payment Status */}
+              <div className="mb-6">
+                <h3 className="font-semibold mb-3">Update Payment Status</h3>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => updatePaymentStatus(selectedOrder.id, 'PENDING')}
+                    className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded hover:bg-yellow-200"
+                  >
+                    Pending
+                  </button>
+                  <button
+                    onClick={() => updatePaymentStatus(selectedOrder.id, 'PAID')}
+                    className="px-4 py-2 bg-green-100 text-green-800 rounded hover:bg-green-200"
+                  >
+                    Paid
+                  </button>
+                  <button
+                    onClick={() => updatePaymentStatus(selectedOrder.id, 'FAILED')}
+                    className="px-4 py-2 bg-red-100 text-red-800 rounded hover:bg-red-200"
+                  >
+                    Failed
+                  </button>
+                  <button
+                    onClick={() => updatePaymentStatus(selectedOrder.id, 'REFUNDED')}
+                    className="px-4 py-2 bg-purple-100 text-purple-800 rounded hover:bg-purple-200"
+                  >
+                    Refunded
                   </button>
                 </div>
               </div>

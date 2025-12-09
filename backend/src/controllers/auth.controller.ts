@@ -104,3 +104,15 @@ export const getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) 
     }
   });
 });
+
+// @desc    Delete user
+// @route   DELETE /api/auth/users/:id
+// @access  Private/Admin
+export const deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+  await authService.deleteUser(req.params.id);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'User deleted successfully'
+  });
+});

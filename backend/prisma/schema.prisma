@@ -91,7 +91,8 @@ model CartItem {
 model Order {
   id              String        @id @default(uuid())
   orderNumber     String        @unique
-  userId          String
+  userId          String?       // Optional for guest checkout
+  guestEmail      String?       // Email for guest orders
   totalAmount     Float
   status          OrderStatus   @default(PENDING)
   paymentMethod   String?
@@ -101,12 +102,13 @@ model Order {
   updatedAt       DateTime      @updatedAt
 
   // Relations
-  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user  User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items OrderItem[]
 
   @@index([userId])
   @@index([orderNumber])
   @@index([status])
+  @@index([guestEmail])
   @@map("orders")
 }
 

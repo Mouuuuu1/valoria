@@ -1,19 +1,25 @@
 import { Router } from 'express';
 import {
   createOrder,
+  createGuestOrder,
   getUserOrders,
   getOrderById,
+  getGuestOrder,
   getAllOrders,
   updateOrderStatus,
   createPaymentIntent,
   getOrderStatistics
 } from '../controllers/order.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
-import { orderValidation, idValidation } from '../middleware/validation.middleware';
+import { orderValidation, guestOrderValidation, idValidation } from '../middleware/validation.middleware';
 
 const router = Router();
 
-// All order routes require authentication
+// Guest checkout route (no authentication required)
+router.post('/guest', guestOrderValidation, createGuestOrder);
+router.get('/guest/:orderNumber', getGuestOrder);
+
+// All other order routes require authentication
 router.use(authenticate);
 
 // Customer routes

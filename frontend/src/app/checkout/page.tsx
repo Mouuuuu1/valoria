@@ -2,44 +2,59 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { useCart } from '@/context/CartContext';
 import { api } from '@/lib/api';
 import { toast } from 'react-toastify';
-import { FiCreditCard, FiLock } from 'react-icons/fi';
+import { FiCreditCard, FiLock, FiUser, FiLogIn } from 'react-icons/fi';
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
-  const { cart, clearCart } = useCart();
+  const { cart, clearCart, getCartItems } = useCart();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: user?.name || '',
-    email: user?.email || '',
-    phone: user?.phone || '',
-    street: user?.address?.street || '',
-    city: user?.address?.city || '',
-    state: user?.address?.state || '',
-    zipCode: user?.address?.zipCode || '',
-    country: user?.address?.country || 'USA',
+    fullName: '',
+    email: '',
+    phone: '',
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'USA',
     paymentMethod: 'card',
   });
 
+  // Pre-fill form with user data if authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login?redirect=/checkout');
-      return;
+    if (isAuthenticated && user) {
+      setFormData(prev => ({
+        ...prev,
+        fullName: user.name || prev.fullName,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+        street: user.address?.street || prev.street,
+        city: user.address?.city || prev.city,
+        state: user.address?.state || prev.state,
+        zipCode: user.address?.zipCode || prev.zipCode,
+        country: user.address?.country || prev.country,
+      }));
     }
+  }, [isAuthenticated, user]);
 
-    if (!cart || cart.items.length === 0) {
+  const cartItems = getCartItems();
+
+  useEffect(() => {
+    if (cartItems.length === 0) {
       router.push('/cart');
     }
-  }, [isAuthenticated, cart, router]);
+  }, [cartItems, router]);
 
-  const subtotal = cart?.items.reduce((sum, item) => {
+  const subtotal = cartItems.reduce((sum, item) => {
     const price = item.product?.price || 0;
     return sum + (price * item.quantity);
-  }, 0) || 0;
+  }, 0);
 
   const shipping = subtotal >= 100 ? 0 : 10;
   const total = subtotal + shipping;
@@ -49,34 +64,57 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Prepare order items
-      const items = cart!.items.map(item => ({
-        productId: item.productId,
-        name: item.product?.name || 'Product',
-        price: item.product?.price || 0,
-        quantity: item.quantity,
-        image: item.product?.images?.[0] || '',
-      }));
+      const shippingAddress = {
+        fullName: formData.fullName,
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        country: formData.country,
+        phone: formData.phone,
+      };
 
-      // Create order
-      const order = await api.createOrder({
-        items,
-        shippingAddress: {
-          fullName: formData.fullName,
-          street: formData.street,
-          city: formData.city,
-          state: formData.state,
-          zipCode: formData.zipCode,
-          country: formData.country,
-          phone: formData.phone,
-        },
-      });
+      let orderResult;
 
-      // Clear cart
-      await clearCart();
+      if (isAuthenticated) {
+        // Authenticated user checkout
+        const items = cartItems.map(item => ({
+          productId: item.productId,
+          name: item.product?.name || 'Product',
+          price: item.product?.price || 0,
+          quantity: item.quantity,
+          image: item.product?.images?.[0] || '',
+        }));
 
-      toast.success('Order placed successfully!');
-      router.push(`/orders/${order.id}`);
+        orderResult = await api.createOrder({
+          items,
+          shippingAddress,
+        });
+
+        // Clear cart
+        await clearCart();
+        toast.success('Order placed successfully!');
+        router.push(`/orders/${orderResult.id}`);
+      } else {
+        // Guest checkout
+        const items = cartItems.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        }));
+
+        const result = await api.createGuestOrder({
+          items,
+          shippingAddress,
+          guestEmail: formData.email,
+          paymentMethod: formData.paymentMethod,
+        });
+
+        // Clear cart
+        await clearCart();
+        toast.success('Order placed successfully!');
+        // Redirect to guest order confirmation page
+        router.push(`/orders/guest/${result.orderNumber}?email=${encodeURIComponent(formData.email)}`);
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to place order');
     } finally {
@@ -84,7 +122,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (!isAuthenticated || !cart || cart.items.length === 0) {
+  if (cartItems.length === 0) {
     return null;
   }
 
@@ -93,11 +131,35 @@ export default function CheckoutPage() {
       <div className="container-custom max-w-6xl">
         <h1 className="text-3xl font-bold mb-8">Checkout</h1>
 
+        {/* Guest Checkout Notice */}
+        {!isAuthenticated && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
+            <div className="flex items-start gap-3">
+              <FiUser className="text-blue-600 mt-1" size={20} />
+              <div>
+                <h3 className="font-semibold text-blue-800">Checking out as Guest</h3>
+                <p className="text-blue-700 text-sm mt-1">
+                  You can complete your order without an account. Want to track your orders and save your details?{' '}
+                  <Link href="/login?redirect=/checkout" className="underline font-medium hover:text-blue-900">
+                    Sign in
+                  </Link>{' '}
+                  or{' '}
+                  <Link href="/register?redirect=/checkout" className="underline font-medium hover:text-blue-900">
+                    create an account
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
           {/* Shipping Information */}
           <div className="lg:col-span-2 space-y-6">
             <div className="card">
-              <h2 className="text-xl font-bold mb-6">Shipping Information</h2>
+              <h2 className="text-xl font-bold mb-6">
+                {isAuthenticated ? 'Shipping Information' : 'Contact & Shipping Information'}
+              </h2>
               <div className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -118,7 +180,13 @@ export default function CheckoutPage() {
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       className="input-field"
                       required
+                      disabled={isAuthenticated}
                     />
+                    {!isAuthenticated && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        We&apos;ll send your order confirmation to this email
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -251,7 +319,7 @@ export default function CheckoutPage() {
               <h2 className="text-xl font-bold mb-6">Order Summary</h2>
               
               <div className="space-y-4 mb-6">
-                {cart.items.map((item) => (
+                {cartItems.map((item) => (
                   <div key={item.productId} className="flex gap-3 pb-4 border-b">
                     <div className="w-16 h-16 bg-gray-100 rounded flex-shrink-0">
                       {item.product?.images?.[0] && (
@@ -300,6 +368,18 @@ export default function CheckoutPage() {
               <p className="text-xs text-gray-600 text-center mt-4">
                 <FiLock className="inline" /> Your payment information is secure
               </p>
+
+              {!isAuthenticated && (
+                <div className="mt-4 pt-4 border-t text-center">
+                  <Link 
+                    href="/login?redirect=/checkout" 
+                    className="text-sm text-primary-600 hover:text-primary-700 flex items-center justify-center gap-1"
+                  >
+                    <FiLogIn size={14} />
+                    Have an account? Sign in for faster checkout
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </form>

@@ -1,14 +1,23 @@
 import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
 const router = Router();
 
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, '../../uploads/products');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('📁 Created uploads directory:', uploadsDir);
+}
+
 // Configure multer for file upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/products/');
+    cb(null, uploadsDir);
+  },
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -53,22 +62,34 @@ router.post('/image', authenticate, authorize('admin'), upload.single('image'), 
 });
 
 // Upload multiple images
-router.post('/multiple', authenticate, authorize('admin'), upload.array('images', 5), (req, res) => {
-  if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-    return res.status(400).json({
-      status: 'error',
-      message: 'No files uploaded',
-    });
-  }
+router.post('/multiple', authenticate, authorize('admin'), (req, res) => {
+  upload.array('images', 5)(req, res, (err) => {
+    if (err) {
+      console.error('❌ Upload error:', err);
+      return res.status(400).json({
+        status: 'error',
+        message: err.message || 'File upload failed',
+      });
+    }
 
-  const files = req.files as Express.Multer.File[];
-  const imageUrls = files.map(file => `/uploads/products/${file.filename}`);
-  
-  res.status(200).json({
-    status: 'success',
-    data: {
-      urls: imageUrls,
-    },
+    if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'No files uploaded',
+      });
+    }
+
+    const files = req.files as Express.Multer.File[];
+    const imageUrls = files.map(file => `/uploads/products/${file.filename}`);
+    
+    console.log('✅ Uploaded images:', imageUrls);
+    
+    res.status(200).json({
+      status: 'success',
+      data: {
+        urls: imageUrls,
+      },
+    });
   });
 });
 

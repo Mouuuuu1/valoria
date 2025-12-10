@@ -409,4 +409,19 @@ export class OrderService {
       data: { paymentStatus: status },
     });
   }
+
+  // Delete order
+  async deleteOrder(orderId: string): Promise<void> {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new AppError('Order not found', 404);
+    }
+
+    await prisma.order.delete({
+      where: { id: orderId },
+    });
+  }
 }

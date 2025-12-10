@@ -224,6 +224,10 @@ class ApiClient {
     return data.data!.order;
   }
 
+  async deleteOrder(id: string) {
+    await this.client.delete(`/orders/${id}`);
+  }
+
   // Upload images
   async uploadImages(formData: FormData) {
     const { data } = await this.client.post<ApiResponse<{ urls: string[] }>>('/upload/multiple', formData, {

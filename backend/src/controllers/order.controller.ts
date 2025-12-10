@@ -147,6 +147,7 @@ export const getAllOrders = asyncHandler(async (req: AuthRequest, res: Response)
 });
 
 // @desc    Update order status (Admin)
+// @desc    Update order status
 // @route   PUT /api/orders/:id/status
 // @access  Private/Admin
 export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
@@ -165,6 +166,18 @@ export const updateOrderStatus = asyncHandler(async (req: AuthRequest, res: Resp
     data: {
       order: transformOrder(order)
     }
+  });
+});
+
+// @desc    Delete order
+// @route   DELETE /api/orders/:id
+// @access  Private/Admin
+export const deleteOrder = asyncHandler(async (req: AuthRequest, res: Response) => {
+  await orderService.deleteOrder(req.params.id);
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Order deleted successfully'
   });
 });
 

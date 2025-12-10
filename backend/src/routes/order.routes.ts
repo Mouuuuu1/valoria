@@ -7,6 +7,7 @@ import {
   getGuestOrder,
   getAllOrders,
   updateOrderStatus,
+  deleteOrder,
   createPaymentIntent,
   getOrderStatistics
 } from '../controllers/order.controller';
@@ -32,5 +33,6 @@ router.post('/payment/create-intent', createPaymentIntent);
 router.get('/admin/all', authorize('admin'), getAllOrders);
 router.get('/admin/statistics', authorize('admin'), getOrderStatistics);
 router.put('/:id/status', authorize('admin'), idValidation, updateOrderStatus);
+router.delete('/:id', authorize('admin'), idValidation, deleteOrder);
 
 export default router;

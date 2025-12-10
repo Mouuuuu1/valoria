@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Order } from '@/types';
-import { FiSearch, FiEye } from 'react-icons/fi';
+import { FiSearch, FiEye, FiTrash2 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 
 export default function AdminOrders() {
@@ -59,6 +59,23 @@ export default function AdminOrders() {
       }
     } catch (error) {
       toast.error('Failed to update payment status');
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
+    if (!confirm(`Are you sure you want to delete order ${orderNumber}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      await api.deleteOrder(orderId);
+      toast.success('Order deleted successfully');
+      loadOrders();
+      if (selectedOrder?.id === orderId) {
+        setSelectedOrder(null);
+      }
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Failed to delete order');
     }
   };
 
@@ -156,12 +173,22 @@ export default function AdminOrders() {
                       </span>
                     </td>
                     <td className="p-4">
-                      <button
-                        onClick={() => setSelectedOrder(order)}
-                        className="p-2 text-primary-600 hover:bg-primary-50 rounded"
-                      >
-                        <FiEye size={18} />
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setSelectedOrder(order)}
+                          className="p-2 text-primary-600 hover:bg-primary-50 rounded"
+                          title="View details"
+                        >
+                          <FiEye size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteOrder(order.id, order.orderNumber)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded"
+                          title="Delete order"
+                        >
+                          <FiTrash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

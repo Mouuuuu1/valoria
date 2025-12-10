@@ -14,6 +14,9 @@ export default function CheckoutPage() {
   const { isAuthenticated, user } = useAuth();
   const { cart, clearCart, getCartItems } = useCart();
   const [loading, setLoading] = useState(false);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoApplied, setPromoApplied] = useState(false);
+  const [promoError, setPromoError] = useState('');
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -57,7 +60,26 @@ export default function CheckoutPage() {
   }, 0);
 
   const shipping = subtotal >= 500 ? 0 : 50; // Free shipping on orders over 500 EGP, otherwise 50 EGP
-  const total = subtotal + shipping;
+  const discount = promoApplied ? subtotal * 0.2 : 0; // 20% discount
+  const total = subtotal + shipping - discount;
+
+  const handleApplyPromo = () => {
+    const validCodes = ['VALORIA20', 'WELCOME20', 'SAVE20'];
+    if (validCodes.includes(promoCode.toUpperCase())) {
+      setPromoApplied(true);
+      setPromoError('');
+      toast.success('Promo code applied! 20% discount');
+    } else {
+      setPromoError('Invalid promo code');
+      setPromoApplied(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setPromoCode('');
+    setPromoApplied(false);
+    setPromoError('');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,7 +116,7 @@ export default function CheckoutPage() {
         // Clear cart
         await clearCart();
         toast.success('Order placed successfully!');
-        router.push(`/orders/${orderResult.id}`);
+        router.push(`/checkout/success?orderNumber=${orderResult.orderNumber || orderResult.id}&email=${formData.email}`);
       } else {
         // Guest checkout
         const items = cartItems.map(item => ({
@@ -112,8 +134,8 @@ export default function CheckoutPage() {
         // Clear cart
         await clearCart();
         toast.success('Order placed successfully!');
-        // Redirect to guest order confirmation page
-        router.push(`/orders/guest/${result.orderNumber}?email=${encodeURIComponent(formData.email)}`);
+        // Redirect to success page
+        router.push(`/checkout/success?orderNumber=${result.orderNumber}&email=${encodeURIComponent(formData.email)}`);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to place order');
@@ -362,6 +384,54 @@ export default function CheckoutPage() {
                 ))}
               </div>
 
+              {/* Promo Code Section */}
+              <div className="py-4 border-t">
+                <label className="block text-sm font-medium mb-2">Promo Code</label>
+                {!promoApplied ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promoCode}
+                      onChange={(e) => {
+                        setPromoCode(e.target.value.toUpperCase());
+                        setPromoError('');
+                      }}
+                      placeholder="Enter code"
+                      className="input-field flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleApplyPromo}
+                      disabled={!promoCode}
+                      className="btn-secondary whitespace-nowrap"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center justify-between">
+                    <span className="text-green-800 font-medium text-sm">
+                      {promoCode} applied! 🎉
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleRemovePromo}
+                      className="text-red-600 hover:text-red-800 text-sm underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
+                {promoError && (
+                  <p className="text-red-600 text-sm mt-1">{promoError}</p>
+                )}
+                {!promoApplied && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Try: VALORIA20, WELCOME20, or SAVE20
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2 py-4 border-t">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
@@ -371,6 +441,12 @@ export default function CheckoutPage() {
                   <span>Shipping</span>
                   <span>{shipping === 0 ? 'FREE' : `${shipping.toFixed(2)} EGP`}</span>
                 </div>
+                {promoApplied && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Discount (20%)</span>
+                    <span>-{discount.toFixed(2)} EGP</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-lg font-bold pt-2 border-t">
                   <span>Total</span>
                   <span className="text-primary-600">{total.toFixed(2)} EGP</span>

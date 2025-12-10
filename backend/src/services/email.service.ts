@@ -1,10 +1,18 @@
 import { Resend } from 'resend';
 
 // Email configuration - Use Resend for serverless compatibility (Railway blocks SMTP)
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+let useResend = false;
 
-// For local development fallback to nodemailer if no Resend key
-let useResend = !!process.env.RESEND_API_KEY;
+// Initialize Resend only if API key is provided
+if (process.env.RESEND_API_KEY) {
+  try {
+    resend = new Resend(process.env.RESEND_API_KEY);
+    useResend = true;
+  } catch (error) {
+    console.log('⚠️  Failed to initialize Resend:', error);
+  }
+}
 
 // Nodemailer fallback for local development
 let nodemailerTransporter: any = null;
@@ -193,7 +201,7 @@ export const sendOrderConfirmationEmail = async (data: OrderEmailData): Promise<
   try {
     console.log('📧 Sending customer confirmation to:', data.customerEmail);
     
-    if (useResend) {
+    if (useResend && resend) {
       // Use Resend API
       const result = await resend.emails.send({
         from: 'Valoria <onboarding@resend.dev>', // Use verified domain or resend.dev for testing
@@ -213,7 +221,7 @@ export const sendOrderConfirmationEmail = async (data: OrderEmailData): Promise<
   } catch (error: any) {
     console.error('❌ Failed to send customer email:', error.message);
     console.error('❌ Full error:', error);
-    throw error;
+    // Don't throw - don't fail orders if email fails
   }
 };
 
@@ -331,7 +339,7 @@ export const sendAdminOrderNotification = async (data: OrderEmailData): Promise<
   try {
     console.log('📧 Sending admin notification to:', process.env.ADMIN_EMAIL);
     
-    if (useResend) {
+    if (useResend && resend) {
       // Use Resend API
       const result = await resend.emails.send({
         from: 'Valoria Orders <onboarding@resend.dev>', // Use verified domain or resend.dev for testing
@@ -351,7 +359,7 @@ export const sendAdminOrderNotification = async (data: OrderEmailData): Promise<
   } catch (error: any) {
     console.error('❌ Failed to send admin email:', error.message);
     console.error('❌ Full error:', error);
-    throw error;
+    // Don't throw - don't fail orders if email fails
   }
 };
 

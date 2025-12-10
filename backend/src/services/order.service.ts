@@ -136,7 +136,7 @@ export class OrderService {
       .then(() => console.log('✅ Order emails sent successfully'))
       .catch(err => {
         console.error('❌ Failed to send order emails:', err.message);
-        console.error('❌ Full error:', err);
+        // Don't fail the order if emails fail
       });
 
     return fullOrder;

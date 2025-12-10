@@ -207,7 +207,7 @@ function ProductModal({
     name: product?.name || '',
     description: product?.description || '',
     price: product?.price || 0,
-    category: product?.category || 'TOTE',
+    category: product?.category || 'HANDBAG',
     stock: product?.stock || 0,
     images: product?.images?.join(', ') || '',
     featured: product?.featured || false,

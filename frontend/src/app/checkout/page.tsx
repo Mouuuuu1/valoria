@@ -65,7 +65,8 @@ export default function CheckoutPage() {
 
   const handleApplyPromo = () => {
     const validCodes = ['architectureProject'];
-    if (validCodes.includes(promoCode)) {
+        const validCodes = ['ARCHITECTURE'];
+        if (validCodes.includes(promoCode)) {
       setPromoApplied(true);
       setPromoError('');
       toast.success('Promo code applied! 20% discount');
@@ -393,7 +394,7 @@ export default function CheckoutPage() {
                       type="text"
                       value={promoCode}
                       onChange={(e) => {
-                        setPromoCode(e.target.value.toUpperCase());
+                        setPromoCode(e.target.value);
                         setPromoError('');
                       }}
                       placeholder="Enter code"

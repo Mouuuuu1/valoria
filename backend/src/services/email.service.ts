@@ -1,22 +1,34 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Email configuration
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER, // valoria.eg@gmail.com
-    pass: process.env.EMAIL_PASS, // App password (not your regular password)
-  },
-});
+// Email configuration - Use Resend for serverless compatibility (Railway blocks SMTP)
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Verify connection on startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.log('Email service error:', error.message);
-  } else {
-    console.log('Email service ready');
-  }
-});
+// For local development fallback to nodemailer if no Resend key
+let useResend = !!process.env.RESEND_API_KEY;
+
+// Nodemailer fallback for local development
+let nodemailerTransporter: any = null;
+if (!useResend && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  const nodemailer = require('nodemailer');
+  nodemailerTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  nodemailerTransporter.verify((error: any) => {
+    if (error) {
+      console.log('⚠️  Email service error:', error.message);
+    } else {
+      console.log('✅ Email service ready (nodemailer)');
+    }
+  });
+} else if (useResend) {
+  console.log('✅ Email service ready (Resend)');
+} else {
+  console.log('⚠️  No email service configured');
+}
 
 interface OrderItem {
   product: {
@@ -180,9 +192,24 @@ export const sendOrderConfirmationEmail = async (data: OrderEmailData): Promise<
 
   try {
     console.log('📧 Sending customer confirmation to:', data.customerEmail);
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`✅ Order confirmation email sent to ${data.customerEmail}`);
-    console.log('✅ Message ID:', info.messageId);
+    
+    if (useResend) {
+      // Use Resend API
+      const result = await resend.emails.send({
+        from: 'Valoria <onboarding@resend.dev>', // Use verified domain or resend.dev for testing
+        to: data.customerEmail,
+        subject: mailOptions.subject,
+        html: mailOptions.html,
+      });
+      console.log('✅ Order confirmation email sent (Resend):', result.data?.id);
+    } else if (nodemailerTransporter) {
+      // Fallback to nodemailer
+      const info = await nodemailerTransporter.sendMail(mailOptions);
+      console.log('✅ Order confirmation email sent (nodemailer)');
+      console.log('✅ Message ID:', info.messageId);
+    } else {
+      console.log('⚠️  Email not sent - no email service configured');
+    }
   } catch (error: any) {
     console.error('❌ Failed to send customer email:', error.message);
     console.error('❌ Full error:', error);
@@ -303,9 +330,24 @@ export const sendAdminOrderNotification = async (data: OrderEmailData): Promise<
 
   try {
     console.log('📧 Sending admin notification to:', process.env.ADMIN_EMAIL);
-    const info = await transporter.sendMail(mailOptions);
-    console.log('✅ Admin notification email sent to:', process.env.ADMIN_EMAIL);
-    console.log('✅ Message ID:', info.messageId);
+    
+    if (useResend) {
+      // Use Resend API
+      const result = await resend.emails.send({
+        from: 'Valoria Orders <onboarding@resend.dev>', // Use verified domain or resend.dev for testing
+        to: process.env.ADMIN_EMAIL!,
+        subject: mailOptions.subject,
+        html: mailOptions.html,
+      });
+      console.log('✅ Admin notification email sent (Resend):', result.data?.id);
+    } else if (nodemailerTransporter) {
+      // Fallback to nodemailer
+      const info = await nodemailerTransporter.sendMail(mailOptions);
+      console.log('✅ Admin notification email sent (nodemailer)');
+      console.log('✅ Message ID:', info.messageId);
+    } else {
+      console.log('⚠️  Email not sent - no email service configured');
+    }
   } catch (error: any) {
     console.error('❌ Failed to send admin email:', error.message);
     console.error('❌ Full error:', error);

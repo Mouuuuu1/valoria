@@ -53,7 +53,7 @@ router.post('/image', authenticate, authorize('admin'), upload.single('image'), 
 });
 
 // Upload multiple images
-router.post('/images', authenticate, authorize('admin'), upload.array('images', 5), (req, res) => {
+router.post('/multiple', authenticate, authorize('admin'), upload.array('images', 5), (req, res) => {
   if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
     return res.status(400).json({
       status: 'error',

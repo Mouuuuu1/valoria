@@ -7,7 +7,11 @@ import { authenticate, authorize } from '../middleware/auth.middleware';
 const router = Router();
 
 // Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, '../../uploads/products');
+// Use /tmp for Railway compatibility (app directory might be read-only)
+const uploadsDir = process.env.NODE_ENV === 'production' 
+  ? '/tmp/uploads/products' 
+  : path.join(__dirname, '../../uploads/products');
+
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
   console.log('📁 Created uploads directory:', uploadsDir);
@@ -62,34 +66,42 @@ router.post('/image', authenticate, authorize('admin'), upload.single('image'), 
 });
 
 // Upload multiple images
-router.post('/multiple', authenticate, authorize('admin'), (req, res) => {
+router.post('/multiple', authenticate, authorize('admin'), (req, res, next) => {
   upload.array('images', 5)(req, res, (err) => {
-    if (err) {
-      console.error('❌ Upload error:', err);
-      return res.status(400).json({
+    try {
+      if (err) {
+        console.error('❌ Upload error:', err);
+        return res.status(400).json({
+          status: 'error',
+          message: err.message || 'File upload failed',
+        });
+      }
+
+      if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'No files uploaded',
+        });
+      }
+
+      const files = req.files as Express.Multer.File[];
+      const imageUrls = files.map(file => `/uploads/products/${file.filename}`);
+      
+      console.log('✅ Uploaded images:', imageUrls);
+      
+      res.status(200).json({
+        status: 'success',
+        data: {
+          urls: imageUrls,
+        },
+      });
+    } catch (error: any) {
+      console.error('❌ Unexpected error in upload:', error);
+      res.status(500).json({
         status: 'error',
-        message: err.message || 'File upload failed',
+        message: error.message || 'Upload failed',
       });
     }
-
-    if (!req.files || (req.files as Express.Multer.File[]).length === 0) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'No files uploaded',
-      });
-    }
-
-    const files = req.files as Express.Multer.File[];
-    const imageUrls = files.map(file => `/uploads/products/${file.filename}`);
-    
-    console.log('✅ Uploaded images:', imageUrls);
-    
-    res.status(200).json({
-      status: 'success',
-      data: {
-        urls: imageUrls,
-      },
-    });
   });
 });
 

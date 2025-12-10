@@ -64,8 +64,7 @@ export default function CheckoutPage() {
   const total = subtotal + shipping - discount;
 
   const handleApplyPromo = () => {
-    const validCodes = ['architectureProject'];
-        const validCodes = ['ARCHITECTURE'];
+    const validCodes = ['ARCHITECTURE'];
         if (validCodes.includes(promoCode)) {
       setPromoApplied(true);
       setPromoError('');

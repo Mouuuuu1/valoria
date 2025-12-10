@@ -3,30 +3,58 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { authenticate, authorize } from '../middleware/auth.middleware';
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
 
 const router = Router();
 
-// Ensure uploads directory exists
-// Use /tmp for Railway compatibility (app directory might be read-only)
-const uploadsDir = process.env.NODE_ENV === 'production' 
-  ? '/tmp/uploads/products' 
-  : path.join(__dirname, '../../uploads/products');
+// Configure Cloudinary
+const useCloudinary = !!(process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET);
 
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('📁 Created uploads directory:', uploadsDir);
+if (useCloudinary) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  console.log('✅ Cloudinary configured for image uploads');
 }
 
-// Configure multer for file upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname));
-  },
-});
+// Configure storage based on environment
+let storage: any;
+let uploadsDir: string;
+
+if (useCloudinary) {
+  // Use Cloudinary for production
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'valoria/products',
+      allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+      transformation: [{ width: 1000, height: 1000, crop: 'limit' }],
+    } as any,
+  });
+} else {
+  // Use local storage for development
+  uploadsDir = process.env.NODE_ENV === 'production' 
+    ? '/tmp/uploads/products' 
+    : path.join(__dirname, '../../uploads/products');
+
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+    console.log('📁 Created uploads directory:', uploadsDir);
+  }
+
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      cb(null, 'product-' + uniqueSuffix + path.extname(file.originalname));
+    },
+  });
+}
 
 const upload = multer({
   storage,
@@ -53,7 +81,8 @@ router.post('/image', authenticate, authorize('admin'), upload.single('image'), 
     });
   }
 
-  const imageUrl = `/uploads/products/${req.file.filename}`;
+  // Cloudinary files have a 'path' property with the full URL
+  const imageUrl = (req.file as any).path || `/uploads/products/${req.file.filename}`;
   
   res.status(200).json({
     status: 'success',
@@ -84,7 +113,8 @@ router.post('/multiple', authenticate, authorize('admin'), (req, res, next) => {
       }
 
       const files = req.files as Express.Multer.File[];
-      const imageUrls = files.map(file => `/uploads/products/${file.filename}`);
+      // Cloudinary files have a 'path' property with the full URL
+      const imageUrls = files.map(file => (file as any).path || `/uploads/products/${file.filename}`);
       
       console.log('✅ Uploaded images:', imageUrls);
       

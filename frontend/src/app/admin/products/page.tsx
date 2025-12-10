@@ -228,9 +228,11 @@ function ProductModal({
       });
 
       const response = await api.uploadImages(formData);
-      // URLs come from backend with /uploads/products/... path
+      // URLs from Cloudinary are complete HTTPS URLs, local uploads need API URL prepended
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
-      const urls = response.urls.map((url: string) => `${apiUrl}${url}`);
+      const urls = response.urls.map((url: string) => 
+        url.startsWith('http') ? url : `${apiUrl}${url}`
+      );
       
       setUploadedUrls([...uploadedUrls, ...urls]);
       setFormData(prev => ({

@@ -3,6 +3,8 @@ import Link from 'next/link';
 import { FiCheckCircle, FiPackage, FiHome } from 'react-icons/fi';
 import OrderSuccessContent from './OrderSuccessContent';
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic';
 
 export default function OrderSuccessPage() {
   return (

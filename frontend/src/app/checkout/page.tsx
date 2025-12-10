@@ -22,7 +22,7 @@ export default function CheckoutPage() {
     city: '',
     state: '',
     zipCode: '',
-    country: 'USA',
+    country: 'Egypt',
     paymentMethod: 'cash',
   });
 
@@ -56,7 +56,7 @@ export default function CheckoutPage() {
     return sum + (price * item.quantity);
   }, 0);
 
-  const shipping = subtotal >= 100 ? 0 : 10;
+  const shipping = subtotal >= 500 ? 0 : 50; // Free shipping on orders over 500 EGP, otherwise 50 EGP
   const total = subtotal + shipping;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,6 +169,8 @@ export default function CheckoutPage() {
                       value={formData.fullName}
                       onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                       className="input-field"
+                      placeholder="Enter your full name"
+                      minLength={3}
                       required
                     />
                   </div>
@@ -197,8 +199,12 @@ export default function CheckoutPage() {
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="input-field"
+                    placeholder="01012345678"
+                    pattern="^01[0-2,5]{1}[0-9]{8}$"
+                    title="Please enter a valid Egyptian phone number (e.g., 01012345678)"
                     required
                   />
+                  <p className="text-xs text-gray-500 mt-1">Egyptian phone number (starts with 010, 011, 012, or 015)</p>
                 </div>
 
                 <div>
@@ -208,6 +214,8 @@ export default function CheckoutPage() {
                     value={formData.street}
                     onChange={(e) => setFormData({ ...formData, street: e.target.value })}
                     className="input-field"
+                    placeholder="Building number, street name, area"
+                    minLength={5}
                     required
                   />
                 </div>
@@ -215,50 +223,63 @@ export default function CheckoutPage() {
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">City *</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.city}
                       onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                       className="input-field"
                       required
-                    />
+                    >
+                      <option value="">Select City</option>
+                      <option value="Cairo">Cairo</option>
+                      <option value="Giza">Giza</option>
+                      <option value="Alexandria">Alexandria</option>
+                      <option value="Luxor">Luxor</option>
+                      <option value="Aswan">Aswan</option>
+                      <option value="Hurghada">Hurghada</option>
+                      <option value="Sharm El Sheikh">Sharm El Sheikh</option>
+                      <option value="Port Said">Port Said</option>
+                      <option value="Suez">Suez</option>
+                      <option value="Mansoura">Mansoura</option>
+                      <option value="Tanta">Tanta</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">State *</label>
+                    <label className="block text-sm font-medium mb-2">Governorate *</label>
                     <input
                       type="text"
                       value={formData.state}
                       onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                       className="input-field"
+                      placeholder="e.g., Cairo, Giza"
+                      minLength={2}
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Zip Code *</label>
+                    <label className="block text-sm font-medium mb-2">Postal Code</label>
                     <input
                       type="text"
                       value={formData.zipCode}
                       onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                       className="input-field"
-                      required
+                      placeholder="Optional"
+                      pattern="[0-9]{5}"
+                      title="5-digit postal code"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Country *</label>
-                  <select
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="input-field"
-                    required
-                  >
-                    <option value="USA">United States</option>
-                    <option value="Canada">Canada</option>
-                    <option value="UK">United Kingdom</option>
-                    <option value="Australia">Australia</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <label className="block text-sm font-medium mb-2">Country</label>
+                  <input
+                    type="text"
+                    value="Egypt"
+                    className="input-field bg-gray-100"
+                    disabled
+                    readOnly
+                  />
+                  <p className="text-xs text-gray-500 mt-1">We currently ship to Egypt only</p>
                 </div>
               </div>
             </div>

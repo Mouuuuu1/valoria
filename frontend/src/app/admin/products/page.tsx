@@ -228,7 +228,9 @@ function ProductModal({
       });
 
       const response = await api.uploadImages(formData);
-      const urls = response.urls.map((url: string) => `http://localhost:5001${url}`);
+      // URLs come from backend with /uploads/products/... path
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const urls = response.urls.map((url: string) => `${apiUrl}${url}`);
       
       setUploadedUrls([...uploadedUrls, ...urls]);
       setFormData(prev => ({

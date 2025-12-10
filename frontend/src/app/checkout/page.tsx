@@ -64,8 +64,8 @@ export default function CheckoutPage() {
   const total = subtotal + shipping - discount;
 
   const handleApplyPromo = () => {
-    const validCodes = ['VALORIA20', 'WELCOME20', 'SAVE20'];
-    if (validCodes.includes(promoCode.toUpperCase())) {
+    const validCodes = ['architectureProject'];
+    if (validCodes.includes(promoCode)) {
       setPromoApplied(true);
       setPromoError('');
       toast.success('Promo code applied! 20% discount');
@@ -427,7 +427,7 @@ export default function CheckoutPage() {
                 )}
                 {!promoApplied && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Try: VALORIA20, WELCOME20, or SAVE20
+                    Enter promo code for 20% discount
                   </p>
                 )}
               </div>
